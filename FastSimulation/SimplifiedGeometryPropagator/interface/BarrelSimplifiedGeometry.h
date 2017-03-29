@@ -26,7 +26,8 @@ namespace fastsim{
 	    {
 		throw cms::Exception("fastsim::BarrelSimplifiedGeometry::getThickness") << "position is not on layer's surface";
 	    }
-	    double fabsCosTheta = fabs(momentum.Vect().Dot(position.Vect())) / momentum.Rho() / position.Rho();
+	    ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >::Scalar> > normVec(position.Px(), position.Py(), 0.);
+	    double fabsCosTheta = fabs(momentum.Vect().Dot(normVec)) / (momentum.P() * normVec.R());
 	    return thicknessHist_->GetBinContent(thicknessHist_->GetXaxis()->FindBin(fabs(position.Z()))) / fabsCosTheta;
 	}
 	
@@ -46,7 +47,7 @@ namespace fastsim{
 
 	bool isOnSurface(const math::XYZTLorentzVector & position) const override
 	{
-	    return fabs(position_ - sqrt(position.Perp2())) < epsilonDistanceR_;
+	    return fabs(position_ - position.Rho()) < epsilonDistanceR_;
 	}
     };
 

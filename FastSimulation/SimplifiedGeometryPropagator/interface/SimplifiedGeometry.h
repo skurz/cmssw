@@ -35,6 +35,7 @@ namespace fastsim
 
 	// Getters
 	int index() const {return index_;}
+	const double getPosition() const { return position_; }
 	virtual const double getThickness(const math::XYZTLorentzVector & position, const math::XYZTLorentzVector & momentum) const = 0;
 	const double getNuclearInteractionThicknessFactor() const {return nuclearInteractionThicknessFactor_; }
 	const DetLayer* getDetLayer(double z = 0) const { return detLayer_; }

@@ -93,22 +93,21 @@ void fastsim::Bremsstrahlung::interact(fastsim::Particle & particle, const Simpl
     // Energy of these photons
     for ( unsigned int i=0; i<nPhotons; ++i ) 
     {
-	// Check that there is enough energy left.
-	if ( particle.momentum().E() < minPhotonEnergy_ ) break;
+    	// Check that there is enough energy left.
+    	if ( particle.momentum().E() < minPhotonEnergy_ ) break;
 
-	// Add a photon
-	secondaries.emplace_back(new fastsim::Particle(22,particle.position(),brem(particle, xmin, random)));
-	secondaries.back()->momentum() = ROOT::Math::RotationY(theta)*secondaries.back()->momentum();
-	secondaries.back()->momentum() = ROOT::Math::RotationZ(phi)*secondaries.back()->momentum();
-	
-	// Update the original e+/-
-	particle.momentum() -= secondaries.back()->momentum();
+    	// Add a photon
+    	secondaries.emplace_back(new fastsim::Particle(22,particle.position(),brem(particle, xmin, random)));
+    	secondaries.back()->momentum() = ROOT::Math::RotationZ(phi)*(ROOT::Math::RotationY(theta)*secondaries.back()->momentum());
+    	
+    	// Update the original e+/-
+    	particle.momentum() -= secondaries.back()->momentum();
     }
 }	
 
 
 math::XYZTLorentzVector
-fastsim::Bremsstrahlung::brem(fastsim::Particle & particle , double xmin,const RandomEngineAndDistribution & random) const 
+fastsim::Bremsstrahlung::brem(fastsim::Particle & particle, double xmin, const RandomEngineAndDistribution & random) const 
 {
 
     // This is a simple version (a la PDG) of a Brem generator.

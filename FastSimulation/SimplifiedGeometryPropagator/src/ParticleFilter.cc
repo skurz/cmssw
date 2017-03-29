@@ -36,45 +36,59 @@ bool fastsim::ParticleFilter::accepts(const fastsim::Particle & particle) const
     // skip invisible particles
     if(absPdgId == 12 || absPdgId == 14 || absPdgId == 16 || absPdgId == 1000022)
     {
-	return false;
-    }    // keep all high-energy protons
+	   return false;
+    }
+    // keep all high-energy protons
     else if(absPdgId == 2212 && particle.momentum().E() >= protonEMin_)
     {
-    return true;
-    }
-    
-    // cut on the energy
-    else if( particle.momentum().E() < EMin_)
-    {
-	return false;
-    }
-    
-    // cut on pt of charged particles
-    else if( particle.charge()!=0 && particle.momentum().Perp2()<chargedPtMin2_)
-    {
-	return false;
+        return true;
     }
     
     // cut on eta if the origin vertex is close to the beam
     else if( particle.position().Perp2() < 25. && particle.momentum().Pz()*particle.momentum().Pz()/particle.momentum().P2() > cos2ThetaMax_)
     {
-	return false;
+	   return false;
     }
 
     // possible to extend list of invisible particles
     for(unsigned InvIdx = 0; InvIdx < skipParticles_.size(); InvIdx++){
         if(absPdgId == abs(skipParticles_.at(InvIdx)))
         {
-        return false;
+            return false;
         }
     }
 
     // particles must have vertex in volume of tracker
-    return accepts(particle.position());
-} 
+    return acceptsVtx(particle.position()) && acceptsEn(particle);
+}
+
+bool fastsim::ParticleFilter::acceptsEn(const fastsim::Particle & particle) const
+{
+    int absPdgId = abs(particle.pdgId());
+
+    // keep all high-energy protons
+    if(absPdgId == 2212 && particle.momentum().E() >= protonEMin_)
+    {
+        return true;
+    }
+    
+    // cut on the energy
+    else if( particle.momentum().E() < EMin_)
+    {
+        return false;
+    }
+    
+    // cut on pt of charged particles
+    else if( particle.charge()!=0 && particle.momentum().Perp2()<chargedPtMin2_)
+    {
+        return false;
+    }
+    
+    return true;
+}
 
 
-bool fastsim::ParticleFilter::accepts(const math::XYZTLorentzVector & originVertex) const
+bool fastsim::ParticleFilter::acceptsVtx(const math::XYZTLorentzVector & originVertex) const
 {
     return originVertex.Perp2() < vertexRMax2_ && fabs(originVertex.Z()) < vertexZMax_;
 }

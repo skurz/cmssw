@@ -41,6 +41,7 @@ fastsim::ParticleManager::ParticleManager(
     , lengthUnitConversionFactor_(conversion_factor(genEvent_->length_unit(),HepMC::Units::LengthUnit::CM))
     , lengthUnitConversionFactor2_(lengthUnitConversionFactor_*lengthUnitConversionFactor_)
     , timeUnitConversionFactor_(lengthUnitConversionFactor_/fastsim::Constants::speedOfLight)
+
 {
     // add the main vertex from the signal event to the simvertex collection
     if(genEvent.vertices_begin() != genEvent_->vertices_end())
@@ -90,14 +91,16 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextParticle(const 
     	// set lifetime
     	if(!particle->remainingProperLifeTimeIsSet())
     	{
-    	    double averageLifeTime = particleData->lifetime().value()/fastsim::Constants::speedOfLight; //!!! units: particleData returns units in c*t?
-    	    if(averageLifeTime > 1e25 || averageLifeTime < 1e-25) // ridiculously safe // particleData seems to return 0 in case particle is stable!
+            // The lifetime is 0. in the Pythia Particle Data Table! Calculate from width instead (ct=hbar/width).
+            // ct=particleData->lifetime().value();
+            double width = particleData->totalWidth().value();
+    	    if(width < 1.0e-35)
     	    {
     		  particle->setStable();
     	    }
     	    else
     	    {
-    		  particle->setRemainingProperLifeTime(-log(random.flatShoot())*averageLifeTime);
+    		  particle->setRemainingProperLifeTime(-log(random.flatShoot())*6.582119e-25/width/fastsim::Constants::speedOfLight);
     	    }
     	}
 
@@ -125,7 +128,7 @@ void fastsim::ParticleManager::addSecondaries(
 {
 
     // vertex must be within the accepted volume
-    if(!particleFilter_->accepts(vertexPosition))
+    if(!particleFilter_->acceptsVtx(vertexPosition))
     {
 	return;
     }

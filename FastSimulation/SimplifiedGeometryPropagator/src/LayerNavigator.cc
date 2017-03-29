@@ -239,14 +239,19 @@ bool fastsim::LayerNavigator::moveParticleToNextLayer(fastsim::Particle & partic
 		}
     }
 
-    // TODO : review time unit: ct or just t?
     double properDeltaTime = deltaTime / particle.gamma();
     if(!particle.isStable() && properDeltaTime > particle.remainingProperLifeTime())
     {
 		deltaTime = particle.remainingProperLifeTime() * particle.gamma();
+
+		trajectory->move(deltaTime);
+		particle.position() = trajectory->getPosition();
+		particle.momentum() = trajectory->getMomentum();
+
 		particle.setRemainingProperLifeTime(0.);
-		layer = 0;
-		LogDebug(MESSAGECATEGORY) << "    particle about to decay. Will not be moved.";
+
+		LogDebug(MESSAGECATEGORY) << "    particle about to decay. Will not be moved all the way to the next layer.";
+		return 0;
     }
 
     // temporary, to get rid of additional hits since there is no ecal and stuff yet
@@ -255,9 +260,12 @@ bool fastsim::LayerNavigator::moveParticleToNextLayer(fastsim::Particle & partic
     // move particle in space, time and momentum
     if(layer)
     {
-		trajectory->move(deltaTime);
+    	trajectory->move(deltaTime);
 		particle.position() = trajectory->getPosition();
 		particle.momentum() = trajectory->getMomentum();
+
+		if(!particle.isStable()) particle.setRemainingProperLifeTime(particle.remainingProperLifeTime() - properDeltaTime);
+
 		LogDebug(MESSAGECATEGORY) << "    moved particle to layer: " << *layer;
     }
 

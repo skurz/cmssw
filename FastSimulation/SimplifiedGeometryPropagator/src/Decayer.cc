@@ -19,7 +19,7 @@ fastsim::Decayer::Decayer()
     pythia_->init();
 
     // forbid all decays
-    // (decays are allowed selectively in the particleDaughters function)
+    // (decays are allowed selectively in the decay function)
     Pythia8::ParticleData & pdt = pythia_->particleData;
     int pid = 0;
     while(pdt.nextId(pid) > pid)
@@ -38,6 +38,8 @@ fastsim::Decayer::decay(const Particle & particle,std::vector<std::unique_ptr<fa
     // inspired by method Pythia8Hadronizer::residualDecay() in GeneratorInterface/Pythia8Interface/src/Py8GunBase.cc
     int pid = particle.pdgId();
     pythia_->event.reset();
+
+    std::cout<<"Mother: "<<particle<<std::endl;
     
     // TODO check units
     Pythia8::Particle pythiaParticle( pid , 93, 0, 0, 0, 0, 0, 0,
@@ -64,6 +66,8 @@ fastsim::Decayer::decay(const Particle & particle,std::vector<std::unique_ptr<fa
     	secondaries.emplace_back(new fastsim::Particle(daughter.id()
     						       ,math::XYZTLorentzVector(daughter.xProd(),daughter.yProd(),daughter.zProd(),daughter.tProd())
     						       ,math::XYZTLorentzVector(daughter.px(), daughter.py(), daughter.pz(), daughter.e())));
+
+        std::cout<<"Decay product: "<<*(secondaries.back())<<std::endl;
     }
     
   return;

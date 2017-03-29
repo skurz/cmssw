@@ -54,7 +54,8 @@ namespace fastsim
 	virtual void storeProducts(edm::Event & iEvent) override;
 	std::pair<double, PSimHit*> createHitOnDetector(const TrajectoryStateOnSurface & particle,int pdgId,int simTrackId,const GeomDet & detector, GlobalPoint & refPos);
     private:
-	const float onSurfaceTolerance_;
+    const float onSurfaceTolerance_;
+	const float pTmin_;
 	std::unique_ptr<edm::PSimHitContainer> simHitContainer_;
     };
 }
@@ -64,6 +65,7 @@ namespace fastsim
 fastsim::TrackerSimHitProducer::TrackerSimHitProducer(const std::string & name,const edm::ParameterSet & cfg)
     : fastsim::InteractionModel(name)
     , onSurfaceTolerance_(0.01)
+    , pTmin_(0.1)
     , simHitContainer_(new edm::PSimHitContainer)
 {}
 
@@ -109,6 +111,14 @@ void fastsim::TrackerSimHitProducer::interact(Particle & particle,const Simplifi
     }
 
     //
+    // save hit only if pT higher than threshold
+    //
+    if(particle.momentum().Perp2()<pTmin_*pTmin_)
+    {
+    return;
+    }
+
+    //
     // create the trajectory of the particle
     //
     UniformMagneticField magneticField(layer.getMagneticFieldZ(particle.position())); 
@@ -136,9 +146,9 @@ void fastsim::TrackerSimHitProducer::interact(Particle & particle,const Simplifi
     // Propagate particle backwards a bit to make sure it's outside any components (straight line should work well enough) 
     std::map<double, PSimHit*> distAndHits;
     // Position relative to which the hits should be sorted
-    GlobalPoint positionOutside(particle.position().x()-particle.momentum().x()/particle.momentum().Rho()*10.,
-                                particle.position().y()-particle.momentum().y()/particle.momentum().Rho()*10.,
-                                particle.position().z()-particle.momentum().z()/particle.momentum().Rho()*10.);
+    GlobalPoint positionOutside(particle.position().x()-particle.momentum().x()/particle.momentum().P()*10.,
+                                particle.position().y()-particle.momentum().y()/particle.momentum().P()*10.,
+                                particle.position().z()-particle.momentum().z()/particle.momentum().P()*10.);
     //
     // loop over the compatible detectors
     //
