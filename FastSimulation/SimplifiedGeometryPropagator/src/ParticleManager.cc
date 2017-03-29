@@ -77,7 +77,7 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextParticle(const 
     // if filter does not accept, skip particle
     if(!particleFilter_->accepts(*particle))
     {
-	   return nextParticle(random);
+	    return nextParticle(random);
     }
     if(!particle->remainingProperLifeTimeIsSet() || !particle->chargeIsSet() )
     {
@@ -130,7 +130,7 @@ void fastsim::ParticleManager::addSecondaries(
     // vertex must be within the accepted volume
     if(!particleFilter_->acceptsVtx(vertexPosition))
     {
-	return;
+	   return;
     }
 
     // no need to create vertex in case no particles are produced

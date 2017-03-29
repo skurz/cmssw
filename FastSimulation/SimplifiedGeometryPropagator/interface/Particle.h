@@ -44,7 +44,7 @@ namespace fastsim
 	// other
     bool chargeIsSet() const {return charge_!=-999.;}
 	bool remainingProperLifeTimeIsSet() const {return remainingProperLifeTime_ != -999.;}
-	double gamma() const { return momentum().M() / momentum().E(); };
+	double gamma() const { return momentum().Gamma(); };
 
 	// non-const getters
 	math::XYZTLorentzVector & position() {return position_;}

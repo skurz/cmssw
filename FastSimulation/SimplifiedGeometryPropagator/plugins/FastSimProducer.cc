@@ -142,7 +142,7 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     for(std::unique_ptr<fastsim::Particle> particle = particleManager.nextParticle(*_randomEngine); particle != 0;particle=particleManager.nextParticle(*_randomEngine)) 
     {
-    	std::cout << "\n   moving NEXT particle: " << *particle << std::endl;
+    	//if(particle->charge() != 0) std::cout << "\n   moving NEXT particle: " << *particle << std::endl;
 
 		// move the particle through the layers
 		fastsim::LayerNavigator layerNavigator(geometry_);
@@ -186,12 +186,11 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		// do decays
 		if(!particle->isStable() && particle->remainingProperLifeTime() < 1E-10)
 		{
-		    std::cout << "Decaying particle..." << std::endl;
+		    //std::cout << "Decaying particle..." << std::endl;
 		    std::vector<std::unique_ptr<fastsim::Particle> > secondaries;
 		    decayer_.decay(*particle,secondaries,_randomEngine->theEngine());
-		    std::cout << "   decay has " << secondaries.size() << " products" << std::endl;
+		    //std::cout << "   decay has " << secondaries.size() << " products" << std::endl;
 		    particleManager.addSecondaries(particle->position(),particle->simTrackIndex(),secondaries);
-		    break;
 		}
 		
 		LogDebug(MESSAGECATEGORY) << "################################"
