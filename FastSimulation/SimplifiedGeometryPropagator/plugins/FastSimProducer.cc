@@ -151,8 +151,8 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		// moveParticleToNextLayer(..) returns 0 in case that particle decays
 		while(layerNavigator.moveParticleToNextLayer(*particle,layer))
 		{
-		    LogDebug(MESSAGECATEGORY) << "   moved to next layer: " << *layer;
-			LogDebug(MESSAGECATEGORY) << "   new state: " << *particle;
+		    //if(particle->charge() != 0) std::cout << "   moved to next layer: " << *layer << std::endl;
+			//if(particle->charge() != 0) std::cout << "   new state: " << *particle << std::endl;
 		    
 		    // perform interaction between layer and particle
 		    // do only if there is actual material
@@ -167,14 +167,17 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 			    // kinematic cuts
 			    if(!particleFilter_.acceptsEn(*particle))
-			    {
+			    {	
+			    	layer = 0;
 			    	break;
 			    }
 			}
 
-		    // temporary: break after 100 ns
-		    if(particle->position().T() > 100)
+		    // temporary: break after 25 ns or if outermost layer hit
+		    // no calorimetry simulated yet!
+		    if(particle->position().T() > 25 || particle->position().Perp2() > 119.*119.)
 		    {
+			    layer = 0;
 				break;
 		    }
 		    
@@ -184,7 +187,7 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		}
 
 		// do decays
-		if(!particle->isStable() && particle->remainingProperLifeTime() < 1E-10)
+		if(!particle->isStable() && particle->remainingProperLifeTimeC() < 1E-10)
 		{
 		    //std::cout << "Decaying particle..." << std::endl;
 		    std::vector<std::unique_ptr<fastsim::Particle> > secondaries;

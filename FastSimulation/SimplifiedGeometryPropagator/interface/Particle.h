@@ -15,7 +15,7 @@ namespace fastsim
 	    , charge_(-999.)
 	    , position_(position)
 	    , momentum_(momentum)
-	    , remainingProperLifeTime_(-999.)
+	    , remainingProperLifeTimeC_(-999.) // lifetime in ct
 	    , simTrackIndex_(-1)
 	    , simVertexIndex_(-1)
 	    , genParticleIndex_(-1)
@@ -25,8 +25,8 @@ namespace fastsim
 	void setSimTrackIndex(int index) {simTrackIndex_ = index;}
 	void setSimVertexIndex(int index) {simVertexIndex_ = index;}
 	void setGenParticleIndex(int index){genParticleIndex_ = index;}
-	void setStable(){remainingProperLifeTime_ = -1.;}
-	void setRemainingProperLifeTime(double remainingProperLifeTime){remainingProperLifeTime_ = remainingProperLifeTime;}
+	void setStable(){remainingProperLifeTimeC_ = -1.;}
+	void setRemainingProperLifeTimeC(double remainingProperLifeTime){remainingProperLifeTimeC_ = remainingProperLifeTime;}
 	void setCharge(double charge){charge_ = charge;}
 
 
@@ -35,15 +35,15 @@ namespace fastsim
     double charge() const {return charge_;}
 	const math::XYZTLorentzVector & position() const {return position_;}
 	const math::XYZTLorentzVector & momentum() const {return momentum_;}
-	double remainingProperLifeTime() const {return remainingProperLifeTime_;}
+	double remainingProperLifeTimeC() const {return remainingProperLifeTimeC_;}
 	int simTrackIndex() const {return simTrackIndex_;}
 	int simVertexIndex() const {return simVertexIndex_;}
 	int genParticleIndex() const {return genParticleIndex_;}
-	bool isStable() const {return remainingProperLifeTime_ == -1.;}
+	bool isStable() const {return remainingProperLifeTimeC_ == -1.;}
 
 	// other
     bool chargeIsSet() const {return charge_!=-999.;}
-	bool remainingProperLifeTimeIsSet() const {return remainingProperLifeTime_ != -999.;}
+	bool remainingProperLifeTimeIsSet() const {return remainingProperLifeTimeC_ != -999.;}
 	double gamma() const { return momentum().Gamma(); };
 
 	// non-const getters
@@ -57,7 +57,7 @@ namespace fastsim
 	double charge_;
 	math::XYZTLorentzVector position_;
 	math::XYZTLorentzVector momentum_;
-	double remainingProperLifeTime_;
+	double remainingProperLifeTimeC_;
 	int simTrackIndex_;
 	int simVertexIndex_;
 	int genParticleIndex_;

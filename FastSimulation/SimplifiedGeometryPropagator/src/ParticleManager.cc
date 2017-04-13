@@ -85,7 +85,7 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextParticle(const 
     	const HepPDT::ParticleData * particleData = particleDataTable_->particle(HepPDT::ParticleID(particle->pdgId()));
     	if(!particleData)
     	{
-    	    throw cms::Exception("fastsim::ParticleManager") << "unknown pdg id" << std::endl;
+    	    throw cms::Exception("fastsim::ParticleManager") << "unknown pdg id: " << particle->pdgId() << std::endl;
     	}
 
     	// set lifetime
@@ -94,13 +94,13 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextParticle(const 
             // The lifetime is 0. in the Pythia Particle Data Table! Calculate from width instead (ct=hbar/width).
             // ct=particleData->lifetime().value();
             double width = particleData->totalWidth().value();
-    	    if(width < 1.0e-35)
+    	    if(width > 1.0e-35)
     	    {
-    		  particle->setStable();
+              particle->setRemainingProperLifeTimeC(-log(random.flatShoot())*6.582119e-25/width/10.); // ct in cm
     	    }
-    	    else
+            else
     	    {
-    		  particle->setRemainingProperLifeTime(-log(random.flatShoot())*6.582119e-25/width/fastsim::Constants::speedOfLight);
+              particle->setStable();
     	    }
     	}
 
@@ -222,7 +222,7 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextGenParticle()
     	if(endVertex)
     	{
     	    double labFrameLifeTime = (endVertex->position().t() - productionVertex->position().t())*timeUnitConversionFactor_;
-    	    newParticle->setRemainingProperLifeTime(labFrameLifeTime * newParticle->gamma());
+    	    newParticle->setRemainingProperLifeTimeC(labFrameLifeTime * newParticle->gamma() * fastsim::Constants::speedOfLight);
     	}
 
         // TODO: THIS HAS TO BE FIXED! E.g. the products of a b-decay should point to that vertex and not to the primary vertex!

@@ -201,7 +201,7 @@ std::pair<double, PSimHit*> fastsim::TrackerSimHitProducer::createHitOnDetector(
     // else, propagate 
     else 
     {
-    	// find crossing of particle with 
+    	// find crossing of particle with detector layer
     	HelixArbitraryPlaneCrossing crossing(particle.globalPosition().basicVector(),
     					      particle.globalMomentum().basicVector(),
     					      particle.transverseCurvature(),

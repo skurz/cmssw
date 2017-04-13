@@ -61,7 +61,7 @@ fastsim::Decayer::decay(const Particle & particle,std::vector<std::unique_ptr<fa
     for ( int ipart=nentries_before; ipart<nentries_after; ipart++ ) 
     {
     	Pythia8::Particle& daughter = pythia_->event[ipart];
-    	// TODO: check units!!
+        
     	secondaries.emplace_back(new fastsim::Particle(daughter.id()
     						       ,math::XYZTLorentzVector(daughter.xProd(),daughter.yProd(),daughter.zProd(),daughter.tProd())
     						       ,math::XYZTLorentzVector(daughter.px(), daughter.py(), daughter.pz(), daughter.e())));

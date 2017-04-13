@@ -1,6 +1,8 @@
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/LayerNavigator.h"
+#include "FastSimulation/SimplifiedGeometryPropagator/interface/Constants.h"
 
 #include "vector"
+#include <algorithm>
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
@@ -87,6 +89,8 @@ bool fastsim::LayerNavigator::moveParticleToNextLayer(fastsim::Particle & partic
 
     // particle moves inwards?
     bool particleMovesInwards = particle.momentum().X()*particle.position().X() + particle.momentum().Y()*particle.position().Y() < 0;
+
+    //if(particleMovesInwards && particle.position().Perp2()>3.0*3.0) return 0;
     
     //
     //  update nextBarrelLayer and nextForwardLayer
@@ -227,44 +231,41 @@ bool fastsim::LayerNavigator::moveParticleToNextLayer(fastsim::Particle & partic
 		}
     }
     
-    double deltaTime = -1;
+    double deltaTimeC = -1;
     for(auto _layer : layers)
     {
 		double tempDeltaTime = trajectory->nextCrossingTimeC(*_layer);
 		LogDebug(MESSAGECATEGORY) << "   particle crosses layer " << *_layer << " in time " << tempDeltaTime;
-		if(tempDeltaTime > 0 && (layer == 0 || tempDeltaTime<deltaTime || deltaTime < 0))
+		if(tempDeltaTime > 0 && (layer == 0 || tempDeltaTime<deltaTimeC || deltaTimeC < 0))
 		{
 		    layer = _layer;
-		    deltaTime = tempDeltaTime;
+		    deltaTimeC = tempDeltaTime;
 		}
     }
 
-    double properDeltaTime = deltaTime / particle.gamma();
-    if(!particle.isStable() && properDeltaTime > particle.remainingProperLifeTime())
+    double properDeltaTimeC = deltaTimeC / particle.gamma();
+    if(!particle.isStable() && properDeltaTimeC > particle.remainingProperLifeTimeC())
     {
-		deltaTime = particle.remainingProperLifeTime() * particle.gamma();
+		deltaTimeC = particle.remainingProperLifeTimeC() * particle.gamma();
 
-		trajectory->move(deltaTime);
+		trajectory->move(deltaTimeC);
 		particle.position() = trajectory->getPosition();
 		particle.momentum() = trajectory->getMomentum();
 
-		particle.setRemainingProperLifeTime(0.);
+		particle.setRemainingProperLifeTimeC(0.);
 
 		LogDebug(MESSAGECATEGORY) << "    particle about to decay. Will not be moved all the way to the next layer.";
 		return 0;
     }
 
-    // temporary, to get rid of additional hits since there is no ecal and stuff yet
-    if(deltaTime > 100) return 0;
-
     // move particle in space, time and momentum
     if(layer)
     {
-    	trajectory->move(deltaTime);
+    	trajectory->move(deltaTimeC);
 		particle.position() = trajectory->getPosition();
 		particle.momentum() = trajectory->getMomentum();
 
-		if(!particle.isStable()) particle.setRemainingProperLifeTime(particle.remainingProperLifeTime() - properDeltaTime);
+		if(!particle.isStable()) particle.setRemainingProperLifeTimeC(particle.remainingProperLifeTimeC() - properDeltaTimeC);
 
 		LogDebug(MESSAGECATEGORY) << "    moved particle to layer: " << *layer;
     }
