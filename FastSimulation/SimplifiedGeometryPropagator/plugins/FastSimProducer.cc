@@ -33,7 +33,7 @@
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/InteractionModel.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/InteractionModelFactory.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/ParticleManager.h"
-#include "FastSimulation/Particle/interface/ParticleTable.h"
+#include "FastSimulation/Particle/interface/ParticleTable.h" // TODO: move this
 
 // other
 

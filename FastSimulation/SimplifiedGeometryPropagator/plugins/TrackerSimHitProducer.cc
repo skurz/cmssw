@@ -1,6 +1,5 @@
 #include <vector>
 #include <memory>
-#include <algorithm>
 
 // framework
 #include "FWCore/Framework/interface/Event.h"

@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-_trackerMaterialInteractionModels = cms.untracked.vstring("trackerSimHits","bremsstrahlung")
+# Do not change the order of the interaction models unless you know what you are doing.
+_trackerMaterialInteractionModels = cms.untracked.vstring("bremsstrahlung", "trackerSimHits")
 
 # Material effects to be simulated in the tracker material and associated cuts 
 TrackerMaterialBlock = cms.PSet(
@@ -162,7 +163,7 @@ TrackerMaterialBlock = cms.PSet(
                 radius = cms.untracked.double(120.0),
                 limits = cms.untracked.vdouble(0.0, 120.0, 299.9),
                 thickness = cms.untracked.vdouble(0.042, 0.1596),
-                interactionModels = cms.untracked.vstring("trackerSimHits","bremsstrahlung", "dummyHits")
+                interactionModels = _trackerMaterialInteractionModels
             ),
         ),
 
