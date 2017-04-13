@@ -50,8 +50,6 @@ void fastsim::Bremsstrahlung::interact(fastsim::Particle & particle, const Simpl
     {
 	return;
     }
-
-    return;
     
     double radLengths = layer.getThickness(particle.position(),particle.momentum());
 

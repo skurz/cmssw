@@ -2,7 +2,6 @@
 #define FASTSIM_LAYERNAVIGATOR_H
 
 #include "string"
-#include "vector"
 
 namespace fastsim
 {

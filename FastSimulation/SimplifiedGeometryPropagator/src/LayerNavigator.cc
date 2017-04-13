@@ -2,7 +2,6 @@
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/Constants.h"
 
 #include "vector"
-#include <algorithm>
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 

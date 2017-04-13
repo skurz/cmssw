@@ -142,7 +142,7 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     for(std::unique_ptr<fastsim::Particle> particle = particleManager.nextParticle(*_randomEngine); particle != 0;particle=particleManager.nextParticle(*_randomEngine)) 
     {
-    	//if(particle->charge() != 0) std::cout << "\n   moving NEXT particle: " << *particle << std::endl;
+    	LogDebug(MESSAGECATEGORY) << "\n   moving NEXT particle: " << *particle;
 
 		// move the particle through the layers
 		fastsim::LayerNavigator layerNavigator(geometry_);
@@ -151,8 +151,8 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		// moveParticleToNextLayer(..) returns 0 in case that particle decays
 		while(layerNavigator.moveParticleToNextLayer(*particle,layer))
 		{
-		    //if(particle->charge() != 0) std::cout << "   moved to next layer: " << *layer << std::endl;
-			//if(particle->charge() != 0) std::cout << "   new state: " << *particle << std::endl;
+		    LogDebug(MESSAGECATEGORY) << "   moved to next layer: " << *layer;
+			LogDebug(MESSAGECATEGORY) << "   new state: " << *particle;
 		    
 		    // perform interaction between layer and particle
 		    // do only if there is actual material
