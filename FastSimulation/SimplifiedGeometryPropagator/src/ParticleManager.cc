@@ -119,7 +119,7 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextParticle(const 
     return particle;
 }
 
-// TODO: closest charged daughter...
+// TODO: closest charged daughter... (comment from Lukas - don't know what it means)
 // NOTE:  decayer and interactions must provide particles with right units
 void fastsim::ParticleManager::addSecondaries(
     const math::XYZTLorentzVector & vertexPosition,
@@ -225,7 +225,8 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextGenParticle()
     	    newParticle->setRemainingProperLifeTimeC(labFrameLifeTime * newParticle->gamma() * fastsim::Constants::speedOfLight);
     	}
 
-        // TODO: THIS HAS TO BE FIXED! E.g. the products of a b-decay should point to that vertex and not to the primary vertex!
+        // TODO: The products of a b-decay should point to that vertex and not to the primary vertex!
+        // Seems like this information has to be taken from the genEvent. How to do this? Is this really neccessary? 
         newParticle->setSimVertexIndex(0);
 
         ++genParticleIterator_; ++genParticleIndex_;

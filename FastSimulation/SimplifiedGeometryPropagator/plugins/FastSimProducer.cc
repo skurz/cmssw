@@ -30,10 +30,10 @@
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/LayerNavigator.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/Particle.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/ParticleFilter.h"
-#include "FastSimulation/Particle/interface/ParticleTable.h"  // TODO: get rid of this
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/InteractionModel.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/InteractionModelFactory.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/ParticleManager.h"
+#include "FastSimulation/Particle/interface/ParticleTable.h"
 
 // other
 
@@ -122,7 +122,6 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     edm::ESHandle < HepPDT::ParticleDataTable > pdt;
     iSetup.getData(pdt);
-    // TODO: get rid of this
     ParticleTable::Sentry ptable(&(*pdt));
 
     edm::Handle<edm::HepMCProduct> genParticles;
@@ -189,10 +188,10 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		// do decays
 		if(!particle->isStable() && particle->remainingProperLifeTimeC() < 1E-10)
 		{
-		    //std::cout << "Decaying particle..." << std::endl;
+		    /LogDebug(MESSAGECATEGORY) << "Decaying particle...";
 		    std::vector<std::unique_ptr<fastsim::Particle> > secondaries;
 		    decayer_.decay(*particle,secondaries,_randomEngine->theEngine());
-		    //std::cout << "   decay has " << secondaries.size() << " products" << std::endl;
+		    /LogDebug(MESSAGECATEGORY) << "   decay has " << secondaries.size() << " products";
 		    particleManager.addSecondaries(particle->position(),particle->simTrackIndex(),secondaries);
 		}
 		

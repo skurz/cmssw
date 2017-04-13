@@ -89,6 +89,7 @@ bool fastsim::LayerNavigator::moveParticleToNextLayer(fastsim::Particle & partic
     // particle moves inwards?
     bool particleMovesInwards = particle.momentum().X()*particle.position().X() + particle.momentum().Y()*particle.position().Y() < 0;
 
+    // The old producer does not handle inward tracks. Uncomment for direct comparison
     //if(particleMovesInwards && particle.position().Perp2()>3.0*3.0) return 0;
     
     //
@@ -196,7 +197,7 @@ bool fastsim::LayerNavigator::moveParticleToNextLayer(fastsim::Particle & partic
     // move particle to first hit with one of the enclosing layers
     //
     
-    // TODO: for straight tracks you KNOW in advance wether next or previous barrel layer will be hit: use that information!
+    // Possible improvement: for straight tracks you KNOW in advance wether next or previous barrel layer will be hit: use that information!
 
     
     LogDebug(MESSAGECATEGORY) << "   particle between BarrelLayers: " << (previousBarrelLayer_ ? previousBarrelLayer_->index() : -1) << "/" << (nextBarrelLayer_ ? nextBarrelLayer_->index() : -1) << " (total: "<< geometry_->barrelLayers().size() <<")"

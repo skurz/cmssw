@@ -11,9 +11,6 @@ TrackerMaterialBlock = cms.PSet(
         useTrackerRecoGeometryRecord = cms.untracked.bool(True),
         trackerAlignmentLabel = cms.untracked.string("MisAligned"),
         interactionModels = cms.PSet(
-            #simpleLayerHits = cms.PSet(
-            #    className = cms.string("simpleLayerHits")
-            #    ),
             trackerSimHits = cms.PSet(
                 className = cms.string("trackerSimHits")
                 ),
@@ -38,7 +35,7 @@ TrackerMaterialBlock = cms.PSet(
             ########### The Pixel Barrel layers 1-3 ###########
             #PIXB1
             cms.PSet(
-                radius = cms.untracked.double(4.425),
+                #radius = cms.untracked.double(4.425),
                 limits = cms.untracked.vdouble(0.0, 28.391),
                 thickness = cms.untracked.vdouble(0.0217),
                 activeLayer = cms.untracked.string("BPix1"),
@@ -46,7 +43,7 @@ TrackerMaterialBlock = cms.PSet(
             ),
             #PIXB2
             cms.PSet(
-                radius = cms.untracked.double(7.312),
+                #radius = cms.untracked.double(7.312),
                 limits = cms.untracked.vdouble(0.0, 28.391),
                 thickness = cms.untracked.vdouble(0.0217),
                 activeLayer = cms.untracked.string("BPix2"),
@@ -54,7 +51,7 @@ TrackerMaterialBlock = cms.PSet(
             ),
             #PIXB3
             cms.PSet(
-                radius = cms.untracked.double(10.177),
+                #radius = cms.untracked.double(10.177),
                 limits = cms.untracked.vdouble(0.0, 28.391),
                 thickness = cms.untracked.vdouble(0.0217),
                 activeLayer = cms.untracked.string("BPix3"),
@@ -71,7 +68,7 @@ TrackerMaterialBlock = cms.PSet(
             ########### Tracker Inner barrel layers 1-4 ###########
             #TIB1
             cms.PSet(
-                radius = cms.untracked.double(25.767),
+                #radius = cms.untracked.double(25.767),
                 limits = cms.untracked.vdouble(0.0, 35.0, 65.254),
                 thickness = cms.untracked.vdouble(0.053, 0.0769),
                 activeLayer = cms.untracked.string("TIB1"),
@@ -79,7 +76,7 @@ TrackerMaterialBlock = cms.PSet(
             ),
             #TIB2
             cms.PSet(
-                radius = cms.untracked.double(34.104),
+                #radius = cms.untracked.double(34.104),
                 limits = cms.untracked.vdouble(0.0, 35.0, 65.231),
                 thickness = cms.untracked.vdouble(0.053, 0.0769),
                 activeLayer = cms.untracked.string("TIB2"),
@@ -87,7 +84,7 @@ TrackerMaterialBlock = cms.PSet(
             ),
             #TIB3
             cms.PSet(
-                radius = cms.untracked.double(41.974),
+                #radius = cms.untracked.double(41.974),
                 limits = cms.untracked.vdouble(0.0, 35.0, 66.232),
                 thickness = cms.untracked.vdouble(0.035, 0.0508),
                 activeLayer = cms.untracked.string("TIB3"),
@@ -95,7 +92,7 @@ TrackerMaterialBlock = cms.PSet(
             ),
             #TIB4
             cms.PSet(
-                radius = cms.untracked.double(49.907),
+                #radius = cms.untracked.double(49.907),
                 limits = cms.untracked.vdouble(0.0, 35.0, 66.355),
                 thickness = cms.untracked.vdouble(0.04, 0.058),
                 activeLayer = cms.untracked.string("TIB4"),
@@ -112,7 +109,7 @@ TrackerMaterialBlock = cms.PSet(
             ########### # Tracker Outer barrel layers 1-6 ###########
             #TOB1
             cms.PSet(
-                radius = cms.untracked.double(60.937),
+                #radius = cms.untracked.double(60.937),
                 limits = cms.untracked.vdouble(0.0, 18.0, 30.0, 36.0, 46.0, 55.0, 108.737),
                 thickness = cms.untracked.vdouble(0.021, 0.06, 0.03, 0.06, 0.03, 0.06),
                 activeLayer = cms.untracked.string("TOB1"),
@@ -120,7 +117,7 @@ TrackerMaterialBlock = cms.PSet(
             ),
             #TOB2
             cms.PSet(
-                radius = cms.untracked.double(69.322),
+                #radius = cms.untracked.double(69.322),
                 limits = cms.untracked.vdouble(0.0, 18.0, 30.0, 36.0, 46.0, 55.0, 108.737),
                 thickness = cms.untracked.vdouble(0.021, 0.06, 0.03, 0.06, 0.03, 0.06),
                 activeLayer = cms.untracked.string("TOB2"),
@@ -128,7 +125,7 @@ TrackerMaterialBlock = cms.PSet(
             ),
             #TOB3
             cms.PSet(
-                radius = cms.untracked.double(78.081),
+                #radius = cms.untracked.double(78.081),
                 limits = cms.untracked.vdouble(0.0, 18.0, 30.0, 36.0, 46.0, 55.0, 108.737),
                 thickness = cms.untracked.vdouble(0.0154, 0.044, 0.022, 0.044, 0.022, 0.044),
                 activeLayer = cms.untracked.string("TOB3"),
@@ -136,7 +133,7 @@ TrackerMaterialBlock = cms.PSet(
             ),
             #TOB4
             cms.PSet(
-                radius = cms.untracked.double(86.876),
+                #radius = cms.untracked.double(86.876),
                 limits = cms.untracked.vdouble(0.0, 18.0, 30.0, 36.0, 46.0, 55.0, 108.737),
                 thickness = cms.untracked.vdouble(0.0154, 0.044, 0.022, 0.044, 0.022, 0.044),
                 activeLayer = cms.untracked.string("TOB4"),
@@ -144,7 +141,7 @@ TrackerMaterialBlock = cms.PSet(
             ),
             #TOB5
             cms.PSet(
-                radius = cms.untracked.double(96.569),
+                #radius = cms.untracked.double(96.569),
                 limits = cms.untracked.vdouble(0.0, 18.0, 30.0, 36.0, 46.0, 55.0, 108.737),
                 thickness = cms.untracked.vdouble(0.0154, 0.044, 0.022, 0.044, 0.022, 0.044),
                 activeLayer = cms.untracked.string("TOB5"),
@@ -152,7 +149,7 @@ TrackerMaterialBlock = cms.PSet(
             ),
             #TOB6
             cms.PSet(
-                radius = cms.untracked.double(108.063),
+                #radius = cms.untracked.double(108.063),
                 limits = cms.untracked.vdouble(0.0, 18.0, 30.0, 36.0, 46.0, 55.0, 108.737),
                 thickness = cms.untracked.vdouble(0.0154, 0.044, 0.022, 0.044, 0.022, 0.044),
                 activeLayer = cms.untracked.string("TOB6"),

@@ -10,9 +10,6 @@ fastSimProducer = cms.EDProducer(
     detectorDefinition = TrackerMaterialBlock.TrackerMaterial,
     beamPipeRadius = cms.double(3.),
     interactionModels = cms.PSet(
-            #simpleLayerHits = cms.PSet(
-            #    className = cms.string("fastsim::SimpleLayerHitProducer")
-            #    ),
             trackerSimHits = cms.PSet(
                 className = cms.string("fastsim::TrackerSimHitProducer")
                 ),

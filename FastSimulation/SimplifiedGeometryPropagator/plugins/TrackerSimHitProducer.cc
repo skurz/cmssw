@@ -76,10 +76,6 @@ void fastsim::TrackerSimHitProducer::registerProducts(edm::ProducerBase & produc
 
 void fastsim::TrackerSimHitProducer::storeProducts(edm::Event & iEvent)
 {
-    //std::cout << "Number of Hits: " << simHitContainer_->size() << std::endl;
-    //for(auto shit : *(simHitContainer_.get())){
-    //  std::cout<<shit.detUnitId()<<": "<<shit.localPosition().x()<<","<<shit.localPosition().y()<<std::endl;
-    //}
     iEvent.put(std::move(simHitContainer_), "TrackerHits");
     simHitContainer_.reset(new edm::PSimHitContainer);
 }
@@ -248,7 +244,7 @@ std::pair<double, PSimHit*> fastsim::TrackerSimHitProducer::createHitOnDetector(
     //
     // create the hit
     //
-    double energyDeposit = 0.; // do something about the energy deposit
+    double energyDeposit = 0.; // TODO: energy deposit from ionization. interartion not yet ported from old producer
 
     GlobalPoint hitPos(detector.surface().toGlobal(localPosition));
 

@@ -136,14 +136,12 @@ double fastsim::HelixTrajectory::nextCrossingTimeC(const BarrelSimplifiedGeometr
         }
 
         if(std::abs(layer.getRadius() - sqrt((centerX_ + radius_*std::cos(phi1))*(centerX_ + radius_*std::cos(phi1)) + (centerY_ + radius_*std::sin(phi1))*(centerY_ + radius_*std::sin(phi1)))) > 1e-3){
+            // Propagation not successful for numerical reasons. Do Taylor expansion!
             doApproximation = true;
-            std::cout<<"fastsim::HelixTrajectory::nextCrossingTimeC: Doing approximation: not able to calculate phi1 of intersection"<<std::endl;
-            //throw cms::Exception("fastsim::HelixTrajectory::nextCrossingTimeC") << "not able to calculate phi1 of intersection";
         }
         if(std::abs(layer.getRadius() - sqrt((centerX_ + radius_*std::cos(phi2))*(centerX_ + radius_*std::cos(phi2)) + (centerY_ + radius_*std::sin(phi2))*(centerY_ + radius_*std::sin(phi2)))) > 1e-3){
+            // Propagation not successful for numerical reasons. Do Taylor expansion!
             doApproximation = true;
-            std::cout<<"fastsim::HelixTrajectory::nextCrossingTimeC: Doing approximation: not able to calculate phi2 of intersection"<<std::endl;
-            //throw cms::Exception("fastsim::HelixTrajectory::nextCrossingTimeC") << "not able to calculate phi2 of intersection";
         }
 
         if(!doApproximation){
@@ -173,7 +171,6 @@ double fastsim::HelixTrajectory::nextCrossingTimeC(const BarrelSimplifiedGeometr
                 throw cms::Exception("fastsim::HelixTrajectory::nextCrossingTimeC") << "should not happen. boundaries too loose!";
             }
 
-            // not sure if we should stick to this t*c strategy...
             return std::min(t1,t2)*fastsim::Constants::speedOfLight;
         }
 
@@ -235,7 +232,7 @@ double fastsim::HelixTrajectory::nextCrossingTimeC(const BarrelSimplifiedGeometr
     }
 
     // If particle already on layer return -1 (unless second solution also very small):
-    // TEST: Might have to set std::abs(delPhi2) < 1e-2 to a higher value, e.g. 1e-1?
+    // Might have to set std::abs(delPhi2) < 1e-2 to a higher value, e.g. 1e-1?
     if(std::abs(delPhi)*radius_ < 1e-3){
         if(twoSolutions){
             if(delPhi == delPhi1 && std::abs(delPhi2) < 1e-2) return delPhi2 / phiSpeed_ * fastsim::Constants::speedOfLight;
