@@ -19,6 +19,15 @@ namespace fastsim{
 
 	const double getZ() const { return position_; }
 
+	const double getThickness(const math::XYZTLorentzVector & position) const override
+	{
+	    if(!this->isOnSurface(position))
+	    {
+		return 0;
+	    }
+	    return thicknessHist_->GetBinContent(thicknessHist_->GetXaxis()->FindBin(fabs(position.Pt())));
+	}
+
 	const double getThickness(const math::XYZTLorentzVector & position, const math::XYZTLorentzVector & momentum) const override
 	{
 	    if(!this->isOnSurface(position))

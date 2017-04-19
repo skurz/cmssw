@@ -12,7 +12,26 @@
 
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/InteractionModelFactory.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/InteractionModel.h"
+#include "FastSimulation/SimplifiedGeometryPropagator/interface/Constants.h"
 #include "DataFormats/Math/interface/LorentzVector.h"
+
+
+/** 
+ * This class computes the number, energy and angles of Bremsstrahlung 
+ * photons emitted by electrons and positrons (under the form of a 
+ * ParticlePropagator, i.e., a RawParticle) in the tracker layer, 
+ * and returns the RawParticle modified after radiation as well as 
+ * a list of photons (i.e., a list of RawParticles as well).
+ * The fraction of radiation lengths traversed by the particle 
+ * in this tracker layer is determined in MaterialEffectsSimulator.
+ *
+ * This version (a la PDG) of a dE/dx generator replaces the buggy 
+ * GEANT3 Fortran -> C++ former version (up to FAMOS_0_8_0_pre7).
+ *
+ * \author Patrick Janot
+ * $Date: 25-Dec-2003
+ */ 
+
 
 namespace fastsim
 {
@@ -27,7 +46,6 @@ namespace fastsim
 		      const double partm,
 		      const double efrac,
 		      const RandomEngineAndDistribution & random) const ;
-	// why do we have a dedicated implementation here? check it, probably it can go...
 	unsigned int poisson(double ymu, const RandomEngineAndDistribution & random);
 	double minPhotonEnergy_;
 	double minPhotonEnergyFraction_;
@@ -52,6 +70,13 @@ void fastsim::Bremsstrahlung::interact(fastsim::Particle & particle, const Simpl
     }
     
     double radLengths = layer.getThickness(particle.position(),particle.momentum());
+    //
+    // no material
+    //
+    if(radLengths < 1E-10)
+    {
+    return;
+    }
 
     // Protection : Just stop the electron if more than 1 radiation lengths.
     // This case corresponds to an electron entering the layer parallel to 
@@ -113,7 +138,6 @@ fastsim::Bremsstrahlung::brem(fastsim::Particle & particle, double xmin, const R
     // This is a simple version (a la PDG) of a Brem generator.
     // It replaces the buggy GEANT3 -> C++ former version.
     // Author : Patrick Janot - 25-Dec-2003
-    double emass = 0.0005109990615;
     double xp=0;
     double weight = 0.;
   
@@ -129,7 +153,7 @@ fastsim::Bremsstrahlung::brem(fastsim::Particle & particle, double xmin, const R
     // Isotropic in phi
     const double phi = random.flatShoot()*2*M_PI;
     // theta from universal distribution
-    const double theta = gbteth(particle.momentum().E(),emass,xp,random)*emass/particle.momentum().E();
+    const double theta = gbteth(particle.momentum().E(),fastsim::Constants::eMass,xp,random)*fastsim::Constants::eMass/particle.momentum().E();
   
     // Make momentum components
     double stheta = std::sin(theta);

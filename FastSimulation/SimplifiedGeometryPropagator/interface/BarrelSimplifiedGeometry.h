@@ -20,6 +20,15 @@ namespace fastsim{
 	
 	const double getRadius() const { return position_; }
 	
+	const double getThickness(const math::XYZTLorentzVector & position) const override
+	{
+	    if(!this->isOnSurface(position))
+	    {
+		throw cms::Exception("fastsim::BarrelSimplifiedGeometry::getThickness") << "position is not on layer's surface";
+	    }
+	    return thicknessHist_->GetBinContent(thicknessHist_->GetXaxis()->FindBin(fabs(position.Z())));
+	}
+
 	const double getThickness(const math::XYZTLorentzVector & position, const math::XYZTLorentzVector & momentum) const override
 	{
 	    if(!this->isOnSurface(position))

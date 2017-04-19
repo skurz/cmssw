@@ -19,6 +19,7 @@ namespace fastsim
 	    , simTrackIndex_(-1)
 	    , simVertexIndex_(-1)
 	    , genParticleIndex_(-1)
+	    , energyDeposit_(0)
 	{;}
 	
 	// setters
@@ -28,6 +29,7 @@ namespace fastsim
 	void setStable(){remainingProperLifeTimeC_ = -1.;}
 	void setRemainingProperLifeTimeC(double remainingProperLifeTime){remainingProperLifeTimeC_ = remainingProperLifeTime;}
 	void setCharge(double charge){charge_ = charge;}
+	void setEnergyDeposit(double energyDeposit){energyDeposit_ = energyDeposit;}
 
 
 	// ordinary getters
@@ -40,6 +42,7 @@ namespace fastsim
 	int simVertexIndex() const {return simVertexIndex_;}
 	int genParticleIndex() const {return genParticleIndex_;}
 	bool isStable() const {return remainingProperLifeTimeC_ == -1.;}
+	double getEnergyDeposit(){return energyDeposit_;}
 
 	// other
     bool chargeIsSet() const {return charge_!=-999.;}
@@ -61,6 +64,7 @@ namespace fastsim
 	int simTrackIndex_;
 	int simVertexIndex_;
 	int genParticleIndex_;
+	double energyDeposit_;
     };
 
     std::ostream& operator << (std::ostream& os , const Particle & particle);

@@ -10,14 +10,17 @@ fastSimProducer = cms.EDProducer(
     detectorDefinition = TrackerMaterialBlock.TrackerMaterial,
     beamPipeRadius = cms.double(3.),
     interactionModels = cms.PSet(
-            trackerSimHits = cms.PSet(
-                className = cms.string("fastsim::TrackerSimHitProducer")
-                ),
             bremsstrahlung = cms.PSet(
                 className = cms.string("fastsim::Bremsstrahlung"),
                 minPhotonEnergy = cms.double(0.1),
                 minPhotonEnergyFraction = cms.double(0.005)
                 ),
+            energyLoss = cms.PSet(
+                className = cms.string("fastsim::EnergyLoss")
+                ),
+            trackerSimHits = cms.PSet(
+                className = cms.string("fastsim::TrackerSimHitProducer")
+                ),    
             dummyHits = cms.PSet(
                 className = cms.string("fastsim::DummyHitProducer")
                 ),
