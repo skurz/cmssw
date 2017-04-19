@@ -23,18 +23,14 @@ namespace fastsim{
 	{
 	    if(!this->isOnSurface(position))
 	    {
-		return 0;
+		throw cms::Exception("fastsim::BarrelSimplifiedGeometry::getThickness") << "position is not on layer's surface";
 	    }
 	    return thicknessHist_->GetBinContent(thicknessHist_->GetXaxis()->FindBin(fabs(position.Pt())));
 	}
 
 	const double getThickness(const math::XYZTLorentzVector & position, const math::XYZTLorentzVector & momentum) const override
 	{
-	    if(!this->isOnSurface(position))
-	    {
-		return 0;
-	    }
-	    return thicknessHist_->GetBinContent(thicknessHist_->GetXaxis()->FindBin(fabs(position.Pt()))) / fabs(momentum.Pz()) * momentum.P();
+	    return getThickness(position) / fabs(momentum.Pz()) * momentum.P();
 	}
 
 	const double getMagneticFieldZ(const math::XYZTLorentzVector & position) const override

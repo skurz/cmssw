@@ -31,13 +31,9 @@ namespace fastsim{
 
 	const double getThickness(const math::XYZTLorentzVector & position, const math::XYZTLorentzVector & momentum) const override
 	{
-	    if(!this->isOnSurface(position))
-	    {
-		throw cms::Exception("fastsim::BarrelSimplifiedGeometry::getThickness") << "position is not on layer's surface";
-	    }
 	    ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >::Scalar> > normVec(position.Px(), position.Py(), 0.);
 	    double fabsCosTheta = fabs(momentum.Vect().Dot(normVec)) / (momentum.P() * normVec.R());
-	    return thicknessHist_->GetBinContent(thicknessHist_->GetXaxis()->FindBin(fabs(position.Z()))) / fabsCosTheta;
+	    return getThickness(position) / fabsCosTheta;
 	}
 	
 	const double getMagneticFieldZ(const math::XYZTLorentzVector & position) const override
