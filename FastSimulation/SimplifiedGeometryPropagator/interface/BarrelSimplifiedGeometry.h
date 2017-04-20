@@ -3,6 +3,7 @@
 
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/SimplifiedGeometry.h"
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
+#include "DataFormats/Math/interface/Vector3D.h"
 #include "FWCore/Utilities/interface/Exception.h"
 #include "TH1F.h"
 
@@ -31,7 +32,7 @@ namespace fastsim{
 
 	const double getThickness(const math::XYZTLorentzVector & position, const math::XYZTLorentzVector & momentum) const override
 	{
-	    ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >::Scalar> > normVec(position.Px(), position.Py(), 0.);
+	    math::XYZVector normVec(position.Px(), position.Py(), 0.);
 	    double fabsCosTheta = fabs(momentum.Vect().Dot(normVec)) / (momentum.P() * normVec.R());
 	    return getThickness(position) / fabsCosTheta;
 	}

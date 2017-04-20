@@ -17,12 +17,9 @@
 
 
 /** 
- * This class computes the probability for photons ( under the form 
- * of a ParticlePropagator, i.e., a RawParticle) to convert into an
+ * This class computes the probability for photons to convert into an
  * e+e- pair in the tracker layer. In case, it returns a list of 
- * two RawParticle's (e+ and e-). The fraction of radiation lengths 
- * traversed by the particle in this tracker layer is determined in 
- * MaterialEffectsSimulator.
+ * two particles's (e+ and e-).
  *
  * This version (a la PDG) of a dE/dx generator replaces the buggy 
  * GEANT3 Fortran -> C++ former version (up to FAMOS_0_8_0_pre7).

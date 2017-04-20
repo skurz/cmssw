@@ -18,12 +18,9 @@
 
 /** 
  * This class computes the number, energy and angles of Bremsstrahlung 
- * photons emitted by electrons and positrons (under the form of a 
- * ParticlePropagator, i.e., a RawParticle) in the tracker layer, 
- * and returns the RawParticle modified after radiation as well as 
- * a list of photons (i.e., a list of RawParticles as well).
- * The fraction of radiation lengths traversed by the particle 
- * in this tracker layer is determined in MaterialEffectsSimulator.
+ * photons emitted by electrons and positrons in the tracker layer, 
+ * and returns the modified particle after radiation as well as 
+ * a list of photons.
  *
  * This version (a la PDG) of a dE/dx generator replaces the buggy 
  * GEANT3 Fortran -> C++ former version (up to FAMOS_0_8_0_pre7).

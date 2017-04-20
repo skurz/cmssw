@@ -15,12 +15,9 @@
 
 /** 
  * This class computes the most probable energy loss by ionization,
- * from a charged particle (under the form of a ParticlePropagator, 
- * i.e., a RawParticle) in the tracker layer, smears it with Landau
- * fluctuations and returns the RawParticle with modified energy. 
- * The tracker material is assumed to be 100% Si - crude approximation - 
- * and the fraction of radiation lengths traversed by the particle 
- * in this tracker layer is determined in MaterialEffectsSimulator.
+ * from a charged particle in the tracker layer, smears it with Landau
+ * fluctuations and returns the particle with modified energy. 
+ * The tracker material is assumed to be 100% Si - crude approximation.
  *
  * This version (a la PDG) of a dE/dx generator replaces the buggy 
  * GEANT3 Fortran -> C++ former version (up to FAMOS_0_8_0_pre7).

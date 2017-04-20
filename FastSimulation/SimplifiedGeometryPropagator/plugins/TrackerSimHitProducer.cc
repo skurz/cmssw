@@ -51,7 +51,7 @@ namespace fastsim
     private:
     const double onSurfaceTolerance_;
 	std::unique_ptr<edm::PSimHitContainer> simHitContainer_;
-    double pTmin_;
+    double minMomentum_;
     };
 }
 
@@ -63,7 +63,7 @@ fastsim::TrackerSimHitProducer::TrackerSimHitProducer(const std::string & name,c
     , simHitContainer_(new edm::PSimHitContainer)
 {
     // Set the minimal momentum
-    pTmin_ = cfg.getParameter<double>("minMomentumCut");
+    minMomentum_ = cfg.getParameter<double>("minMomentumCut");
 }
 
 void fastsim::TrackerSimHitProducer::registerProducts(edm::ProducerBase & producer) const
@@ -108,9 +108,9 @@ void fastsim::TrackerSimHitProducer::interact(Particle & particle,const Simplifi
     }
 
     //
-    // save hit only if pT higher than threshold
+    // save hit only if momentum higher than threshold
     //
-    if(particle.momentum().Perp2() < pTmin_*pTmin_)
+    if(particle.momentum().Perp2() < minMomentum_*minMomentum_)
     {
     return;
     }

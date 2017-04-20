@@ -23,6 +23,10 @@ fastSimProducer = cms.EDProducer(
                 className = cms.string("fastsim::EnergyLoss"),
                 minMomentumCut = cms.double(0.1)
                 ),
+            multipleScattering = cms.PSet(
+                className = cms.string("fastsim::MultipleScattering"),
+                minPt = cms.double(0.2)
+                ),
             trackerSimHits = cms.PSet(
                 className = cms.string("fastsim::TrackerSimHitProducer"),
                 minMomentumCut = cms.double(0.1)
