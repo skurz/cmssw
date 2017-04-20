@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 # Do not change the order of the interaction models unless you know what you are doing.
-_trackerMaterialInteractionModels = cms.untracked.vstring("bremsstrahlung", "energyLoss", "trackerSimHits")
+_trackerMaterialInteractionModels = cms.untracked.vstring("pairProduction" ,"bremsstrahlung", "energyLoss", "trackerSimHits")
 
 # Material effects to be simulated in the tracker material and associated cuts 
 TrackerMaterialBlock = cms.PSet(
@@ -12,21 +12,28 @@ TrackerMaterialBlock = cms.PSet(
         useTrackerRecoGeometryRecord = cms.untracked.bool(True),
         trackerAlignmentLabel = cms.untracked.string("MisAligned"),
         interactionModels = cms.PSet(
+            pairProduction = cms.PSet(
+                className = cms.string("pairProduction"),
+                photonEnergyCut = cms.double(0.1)
+                ),            
             bremsstrahlung = cms.PSet(
                 className = cms.string("bremsstrahlung"),
                 minPhotonEnergy = cms.double(0.1),
                 minPhotonEnergyFraction = cms.double(0.005)
-                )
-            ),
+                ),
             energyLoss = cms.PSet(
-                className = cms.string("energyLoss")
+                className = cms.string("energyLoss"),
+                minMomentumCut = cms.double(0.1)
                 ),
             trackerSimHits = cms.PSet(
-                className = cms.string("trackerSimHits")
-                ),
+                className = cms.string("trackerSimHits"),
+                minMomentumCut = cms.double(0.1)
+                ),    
             dummyHits = cms.PSet(
                 className = cms.string("dummyHits")
                 ),
+        ),
+        
         BarrelLayers = cms.VPSet(
             ########### Beam Pipe ###########
             #PIPE

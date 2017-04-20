@@ -3,6 +3,7 @@
 
 // framework
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "MagneticField/UniformEngine/src/UniformMagneticField.h"
 
 // tracking
@@ -34,11 +35,6 @@
 #include "CondFormats/External/interface/DetID.h"
 #include "FWCore/Framework/interface/ProducerBase.h"
 
-namespace edm
-{
-    class ParameterSet;
-}
-
 typedef std::pair<const GeomDet*,TrajectoryStateOnSurface> DetWithState;
 
 namespace fastsim
@@ -53,9 +49,9 @@ namespace fastsim
 	virtual void storeProducts(edm::Event & iEvent) override;
 	std::pair<double, PSimHit*> createHitOnDetector(const TrajectoryStateOnSurface & particle, int pdgId, double layerThickness, double eLoss, int simTrackId, const GeomDet & detector, GlobalPoint & refPos);
     private:
-    const float onSurfaceTolerance_;
-	const float pTmin_;
+    const double onSurfaceTolerance_;
 	std::unique_ptr<edm::PSimHitContainer> simHitContainer_;
+    double pTmin_;
     };
 }
 
@@ -64,9 +60,11 @@ namespace fastsim
 fastsim::TrackerSimHitProducer::TrackerSimHitProducer(const std::string & name,const edm::ParameterSet & cfg)
     : fastsim::InteractionModel(name)
     , onSurfaceTolerance_(0.01)
-    , pTmin_(0.1)
     , simHitContainer_(new edm::PSimHitContainer)
-{}
+{
+    // Set the minimal momentum
+    pTmin_ = cfg.getParameter<double>("minMomentumCut");
+}
 
 void fastsim::TrackerSimHitProducer::registerProducts(edm::ProducerBase & producer) const
 {
@@ -112,7 +110,7 @@ void fastsim::TrackerSimHitProducer::interact(Particle & particle,const Simplifi
     //
     // save hit only if pT higher than threshold
     //
-    if(particle.momentum().Perp2()<pTmin_*pTmin_)
+    if(particle.momentum().Perp2() < pTmin_*pTmin_)
     {
     return;
     }

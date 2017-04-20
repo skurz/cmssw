@@ -39,6 +39,7 @@ namespace fastsim
     {
     public:
 	Bremsstrahlung(const std::string & name,const edm::ParameterSet & cfg);
+    ~Bremsstrahlung(){;};
 	void interact(Particle & particle,const SimplifiedGeometry & layer,std::vector<std::unique_ptr<Particle> > & secondaries,const RandomEngineAndDistribution & random);
     private:
 	math::XYZTLorentzVector brem(Particle & particle , double xmin,const RandomEngineAndDistribution & random) const;
@@ -169,7 +170,7 @@ double
 fastsim::Bremsstrahlung::gbteth(const double ener,
 				const double partm,
 				const double efrac,
-                                const RandomEngineAndDistribution & random) const 
+                const RandomEngineAndDistribution & random) const 
 {
     const double alfa = 0.625;
     
