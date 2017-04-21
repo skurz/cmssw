@@ -11,31 +11,8 @@ TrackerMaterialBlock = cms.PSet(
         maxZ = cms.untracked.double(300.),
         useTrackerRecoGeometryRecord = cms.untracked.bool(True),
         trackerAlignmentLabel = cms.untracked.string("MisAligned"),
-        interactionModels = cms.PSet(
-            pairProduction = cms.PSet(
-                className = cms.string("pairProduction"),
-                photonEnergyCut = cms.double(0.1)
-                ),            
-            bremsstrahlung = cms.PSet(
-                className = cms.string("bremsstrahlung"),
-                minPhotonEnergy = cms.double(0.1),
-                minPhotonEnergyFraction = cms.double(0.005)
-                ),
-            energyLoss = cms.PSet(
-                className = cms.string("energyLoss"),
-                minMomentumCut = cms.double(0.1)
-                ),
-            multipleScattering = cms.PSet(
-                className = cms.string("multipleScattering"),
-                minPt = cms.double(0.2)
-                ),
-            trackerSimHits = cms.PSet(
-                className = cms.string("trackerSimHits"),
-                minMomentumCut = cms.double(0.1)
-                ),
-            dummyHits = cms.PSet(
-                className = cms.string("dummyHits")
-                ),
+        interactionModels = cms.untracked.vstring(
+            _trackerMaterialInteractionModels + cms.untracked.vstring("dummyHits")
         ),
         
         BarrelLayers = cms.VPSet(
