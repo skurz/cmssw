@@ -121,7 +121,7 @@ void fastsim::MultipleScattering::interact(fastsim::Particle & particle, const S
     // Determine a unitary vector tangent to the surface
     XYZVector normal;
     if(layer.isForward()){
-        normal = XYZVector(0., 0., particle.momentum().Pz() / abs(particle.momentum().Pz()));
+        normal = XYZVector(0., 0., particle.momentum().Pz() > 0. ? 1. : -1.);
     }
     else{
         double norm = particle.position().Rho();
