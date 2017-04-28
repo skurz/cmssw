@@ -20,6 +20,10 @@ namespace fastsim
 	    , simVertexIndex_(-1)
 	    , genParticleIndex_(-1)
 	    , energyDeposit_(0)
+	    , isLooper_(false)
+	    , motherDeltaR_(-1)
+		, motherPpdId_(0)
+		, motherSimTrackIndex_(-999)
 	{;}
 	
 	// setters
@@ -30,6 +34,13 @@ namespace fastsim
 	void setRemainingProperLifeTimeC(double remainingProperLifeTime){remainingProperLifeTimeC_ = remainingProperLifeTime;}
 	void setCharge(double charge){charge_ = charge;}
 	void setEnergyDeposit(double energyDeposit){energyDeposit_ = energyDeposit;}
+	void setLooper(){isLooper_ = true;}
+	void setMotherDeltaR(math::XYZTLorentzVector motherMomentum){
+		motherDeltaR_ = (momentum_.Vect().Unit().Cross(motherMomentum.Vect().Unit())).R();
+	}
+	void setMotherPdgId(int id){motherPpdId_ = id;}
+	void setMotherSimTrackIndex(int id){motherSimTrackIndex_ = id;}
+	void resetMother(){motherDeltaR_ = -1; motherPpdId_ = 0; motherSimTrackIndex_ = -999;}
 
 
 	// ordinary getters
@@ -42,12 +53,16 @@ namespace fastsim
 	int simVertexIndex() const {return simVertexIndex_;}
 	int genParticleIndex() const {return genParticleIndex_;}
 	bool isStable() const {return remainingProperLifeTimeC_ == -1.;}
-	double getEnergyDeposit(){return energyDeposit_;}
 
 	// other
     bool chargeIsSet() const {return charge_!=-999.;}
 	bool remainingProperLifeTimeIsSet() const {return remainingProperLifeTimeC_ != -999.;}
 	double gamma() const { return momentum().Gamma(); };
+	double getEnergyDeposit() const {return energyDeposit_;}
+	double isLooper() const {return isLooper_;}
+	double getMotherDeltaR() const {return motherDeltaR_;}
+	int getMotherPdgId() const {return motherPpdId_;}
+	int getMotherSimTrackIndex() const {return motherSimTrackIndex_;}
 
 	// non-const getters
 	math::XYZTLorentzVector & position() {return position_;}
@@ -65,6 +80,10 @@ namespace fastsim
 	int simVertexIndex_;
 	int genParticleIndex_;
 	double energyDeposit_;
+	bool isLooper_;
+	double motherDeltaR_;
+	int motherPpdId_;
+	int motherSimTrackIndex_;
     };
 
     std::ostream& operator << (std::ostream& os , const Particle & particle);

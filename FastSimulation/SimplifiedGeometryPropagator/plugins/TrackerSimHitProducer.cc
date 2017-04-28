@@ -52,6 +52,7 @@ namespace fastsim
     const double onSurfaceTolerance_;
 	std::unique_ptr<edm::PSimHitContainer> simHitContainer_;
     double minMomentum_;
+    bool doHitsFromInboundParticles_;
     };
 }
 
@@ -64,6 +65,10 @@ fastsim::TrackerSimHitProducer::TrackerSimHitProducer(const std::string & name,c
 {
     // Set the minimal momentum
     minMomentum_ = cfg.getParameter<double>("minMomentumCut");
+    // - if not set, particles from outside the beampipe with a negative speed in R direction are propagated but no SimHits
+    // - particle with positive (negative) z and negative (positive) speed in z direction: no SimHits
+    // - this is not neccesary since a track reconstruction is not possible in this case anyways
+    doHitsFromInboundParticles_ = cfg.getParameter<bool>("doHitsFromInboundParticles");
 }
 
 void fastsim::TrackerSimHitProducer::registerProducts(edm::ProducerBase & producer) const
@@ -82,6 +87,23 @@ void fastsim::TrackerSimHitProducer::interact(Particle & particle,const Simplifi
     // the energy deposit in the layer
     double energyDeposit = particle.getEnergyDeposit();
     particle.setEnergyDeposit(0);
+
+    //
+    // don't save hits from particle that did a loop or are inbound (coming from the outer part of the tracker, going towards the center)
+    //
+    if(!doHitsFromInboundParticles_){
+        if(particle.isLooper()){
+            return;
+        }    
+        if(particle.momentum().X()*particle.position().X() + particle.momentum().Y()*particle.position().Y() < 0){
+            particle.setLooper();
+            return;
+        }
+        if(layer.isForward() && ((particle.position().Z() > 0 && particle.momentum().Z() < 0) || (particle.position().Z() < 0 && particle.momentum().Z() > 0))){
+            particle.setLooper();
+            return;
+        }
+    }
 
     //
     // check that layer has tracker modules
@@ -146,6 +168,10 @@ void fastsim::TrackerSimHitProducer::interact(Particle & particle,const Simplifi
     GlobalPoint positionOutside(particle.position().x()-particle.momentum().x()/particle.momentum().P()*10.,
                                 particle.position().y()-particle.momentum().y()/particle.momentum().P()*10.,
                                 particle.position().z()-particle.momentum().z()/particle.momentum().P()*10.);
+
+    // FastSim: cheat tracking -> assign hits to closest charged daughter if particle decays
+    int pdgId = particle.getMotherDeltaR() == -1 ? particle.pdgId() : particle.getMotherPdgId();
+
     //
     // loop over the compatible detectors
     //
@@ -156,7 +182,7 @@ void fastsim::TrackerSimHitProducer::interact(Particle & particle,const Simplifi
     	// if the detector has no components
     	if(detector.isLeaf())
     	{
-    	    std::pair<double, PSimHit*> hitPair = createHitOnDetector(particleState,particle.pdgId(),layer.getThickness(particle.position()),energyDeposit,particle.simTrackIndex(),detector,positionOutside);
+    	    std::pair<double, PSimHit*> hitPair = createHitOnDetector(particleState,pdgId,layer.getThickness(particle.position()),energyDeposit,particle.simTrackIndex(),detector,positionOutside);
     	    if(hitPair.second){
     		  	distAndHits.insert(distAndHits.end(), hitPair);
     		  }
@@ -166,7 +192,7 @@ void fastsim::TrackerSimHitProducer::interact(Particle & particle,const Simplifi
     	    // if the detector has components
     	    for(const auto component : detector.components())
     	    {
-    		  std::pair<double, PSimHit*> hitPair = createHitOnDetector(particleState,particle.pdgId(),layer.getThickness(particle.position()),energyDeposit,particle.simTrackIndex(),*component,positionOutside);    		  
+    		  std::pair<double, PSimHit*> hitPair = createHitOnDetector(particleState,pdgId,layer.getThickness(particle.position()),energyDeposit,particle.simTrackIndex(),*component,positionOutside);    		  
     		  if(hitPair.second){
     		  	distAndHits.insert(distAndHits.end(), hitPair);
     		  }

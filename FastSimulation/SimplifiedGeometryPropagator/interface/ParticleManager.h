@@ -31,6 +31,7 @@ namespace fastsim {
 	    const HepMC::GenEvent & genEvent,
 	    const HepPDT::ParticleDataTable & particleDataTable,
 	    double beamPipeRadius,
+	    double deltaRchargedMother,
 	    const ParticleFilter & particleFilter,
 	    std::unique_ptr<std::vector<SimTrack> > & simTracks,
 	    std::unique_ptr<std::vector<SimVertex> > & simVertices);
@@ -72,6 +73,7 @@ namespace fastsim {
 	int genParticleIndex_;
 	const HepPDT::ParticleDataTable * const particleDataTable_;
 	const double beamPipeRadius2_;
+	const double deltaRchargedMother_;
 	const ParticleFilter * const particleFilter_;
 	std::unique_ptr<std::vector<SimTrack> > simTracks_;
 	std::unique_ptr<std::vector<SimVertex> > simVertices_;

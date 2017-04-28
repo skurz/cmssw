@@ -17,6 +17,7 @@ fastsim::ParticleManager::ParticleManager(
     const HepMC::GenEvent & genEvent,
     const HepPDT::ParticleDataTable & particleDataTable,
     double beamPipeRadius,
+    double deltaRchargedMother,
     const fastsim::ParticleFilter & particleFilter,
     std::unique_ptr<std::vector<SimTrack> > & simTracks,
     std::unique_ptr<std::vector<SimVertex> > & simVertices)
@@ -26,6 +27,7 @@ fastsim::ParticleManager::ParticleManager(
     , genParticleIndex_(1)
     , particleDataTable_(&particleDataTable)
     , beamPipeRadius2_(beamPipeRadius*beamPipeRadius)
+    , deltaRchargedMother_(deltaRchargedMother)
     , particleFilter_(&particleFilter)
     , simTracks_(std::move(simTracks))
     , simVertices_(std::move(simVertices))
@@ -119,7 +121,6 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextParticle(const 
     return particle;
 }
 
-// TODO: closest charged daughter... (comment from Lukas - don't know what it means)
 // NOTE:  decayer and interactions must provide particles with right units
 void fastsim::ParticleManager::addSecondaries(
     const math::XYZTLorentzVector & vertexPosition,
@@ -141,11 +142,39 @@ void fastsim::ParticleManager::addSecondaries(
     // add simVertex
     unsigned simVertexIndex = addSimVertex(vertexPosition,parentSimTrackIndex);
 
-    // add secondaries to buffer
+    // closest charged daughter continues the track of the mother particle
+    // simplified tracking algorithm for fastSim
+    double distMin = 99999.;
+    int idx = -1;
+    int idxMin = -1;
     for(auto & secondary : secondaries)
     {
-	secondary->setSimVertexIndex(simVertexIndex);
-	particleBuffer_.push_back(std::move(secondary));
+    	idx++;
+        if(secondary->getMotherDeltaR() != -1){
+            if(secondary->getMotherDeltaR() > deltaRchargedMother_){
+                secondary->resetMother();
+            }else{
+            	if(secondary->getMotherDeltaR() < distMin){
+            		distMin = secondary->getMotherDeltaR();
+            		idxMin = idx;
+            	}
+            }            
+        }
+    }
+
+    // add secondaries to buffer
+    idx = -1;
+    for(auto & secondary : secondaries)
+    {
+    	idx++;
+    	if(idxMin != -1){
+    		if(secondary->getMotherDeltaR() != -1 && idx != idxMin){
+    			secondary->resetMother();
+    		}
+    	}
+
+    	secondary->setSimVertexIndex(simVertexIndex);
+    	particleBuffer_.push_back(std::move(secondary));
     }
 
 }
@@ -164,12 +193,19 @@ unsigned fastsim::ParticleManager::addSimVertex(
 
 unsigned fastsim::ParticleManager::addSimTrack(const fastsim::Particle * particle)
 {
-    int simTrackIndex = simTracks_->size();
-    simTracks_->emplace_back(particle->pdgId(),
+	int simTrackIndex;
+	// Again: FastSim cheat tracking
+	if(particle->getMotherDeltaR() != -1){
+		simTrackIndex = particle->getMotherSimTrackIndex();
+	}
+	else{
+		simTrackIndex = simTracks_->size();
+    	simTracks_->emplace_back(particle->pdgId(),
                     particle->momentum(),
                     particle->simVertexIndex(),
                     particle->genParticleIndex());
-    simTracks_->back().setTrackId(simTrackIndex);
+    	simTracks_->back().setTrackId(simTrackIndex);
+	}
     return simTrackIndex;
 }
 

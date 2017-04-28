@@ -63,6 +63,12 @@ fastsim::Decayer::decay(const Particle & particle,std::vector<std::unique_ptr<fa
     	secondaries.emplace_back(new fastsim::Particle(daughter.id()
     						       ,math::XYZTLorentzVector(daughter.xProd(),daughter.yProd(),daughter.zProd(),daughter.tProd())
     						       ,math::XYZTLorentzVector(daughter.px(), daughter.py(), daughter.pz(), daughter.e())));
+
+        if(particle.charge() != 0 && daughter.charge() != 0){
+            secondaries.back()->setMotherDeltaR(particle.momentum());
+            secondaries.back()->setMotherPdgId(particle.getMotherDeltaR() == -1 ? particle.pdgId() : particle.getMotherPdgId());
+            secondaries.back()->setMotherSimTrackIndex(particle.simTrackIndex());
+        }
     }
     
   return;

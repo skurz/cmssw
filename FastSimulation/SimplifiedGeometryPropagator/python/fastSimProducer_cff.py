@@ -9,6 +9,7 @@ fastSimProducer = cms.EDProducer(
     particleFilter =  ParticleFilterBlock.ParticleFilter,
     detectorDefinition = TrackerMaterialBlock.TrackerMaterial,
     beamPipeRadius = cms.double(3.),
+    deltaRchargedMother = cms.double(0.02), # Maximum angle to associate a charged daughter to a charged mother (mostly done to associate muons to decaying pions)
     interactionModels = cms.PSet(
             pairProduction = cms.PSet(
                 className = cms.string("fastsim::PairProduction"),
@@ -29,7 +30,8 @@ fastSimProducer = cms.EDProducer(
                 ),
             trackerSimHits = cms.PSet(
                 className = cms.string("fastsim::TrackerSimHitProducer"),
-                minMomentumCut = cms.double(0.1)
+                minMomentumCut = cms.double(0.1),
+                doHitsFromInboundParticles = cms.bool(False), # Track reconstruction not possible for those particles so hits do not have to be simulated
                 ),    
             dummyHits = cms.PSet(
                 className = cms.string("fastsim::DummyHitProducer")

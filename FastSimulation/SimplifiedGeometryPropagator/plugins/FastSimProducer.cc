@@ -52,6 +52,7 @@ private:
     edm::EDGetTokenT<edm::HepMCProduct> genParticlesToken_;
     fastsim::Geometry geometry_;
     double beamPipeRadius_;
+    double deltaRchargedMother_;
     fastsim::ParticleFilter particleFilter_;
     std::unique_ptr<RandomEngineAndDistribution> _randomEngine;
     fastsim::Decayer decayer_;
@@ -67,6 +68,7 @@ FastSimProducer::FastSimProducer(const edm::ParameterSet& iConfig)
     : genParticlesToken_(consumes<edm::HepMCProduct>(iConfig.getParameter<edm::InputTag>("src"))) 
     , geometry_(iConfig.getParameter<edm::ParameterSet>("detectorDefinition"))
     , beamPipeRadius_(iConfig.getParameter<double>("beamPipeRadius"))
+    , deltaRchargedMother_(iConfig.getParameter<double>("deltaRchargedMother"))
     , particleFilter_(iConfig.getParameter<edm::ParameterSet>("particleFilter"))
     , _randomEngine(nullptr)
 {
@@ -131,6 +133,7 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	*genParticles->GetEvent()
 	,*pdt
 	,beamPipeRadius_
+	,deltaRchargedMother_
 	,particleFilter_
 	,output_simTracks
 	,output_simVertices);

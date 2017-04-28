@@ -88,9 +88,6 @@ bool fastsim::LayerNavigator::moveParticleToNextLayer(fastsim::Particle & partic
 
     // particle moves inwards?
     bool particleMovesInwards = particle.momentum().X()*particle.position().X() + particle.momentum().Y()*particle.position().Y() < 0;
-
-    // The old producer does not handle inward tracks. Uncomment for direct comparison
-    //if(particleMovesInwards && particle.position().Perp2()>3.0*3.0) return 0;
     
     //
     //  update nextBarrelLayer and nextForwardLayer
