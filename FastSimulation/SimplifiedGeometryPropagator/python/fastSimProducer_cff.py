@@ -15,12 +15,18 @@ fastSimProducer = cms.EDProducer(
                 className = cms.string("fastsim::PairProduction"),
                 photonEnergyCut = cms.double(0.1)
                 ),
-            nuclearInteractionFTF = cms.PSet(
-                className = cms.string("fastsim::NuclearInteractionFTF"),
+            nuclearInteraction = cms.PSet(
+                className = cms.string("fastsim::NuclearInteraction"),
                 distCut = cms.double(0.020),
-                bertiniLimit = cms.double(3.5), # upper energy limit for the Bertini cascade 
-                energyLimit = cms.double(0.1), # Kinetic energy threshold for secondaries 
+                hadronEnergy = cms.double(3.5), # the smallest momentum for elastic interactions
+                inputFile = cms.string("NuclearInteractionInputFile.txt"), # the file to read the starting interaction in each files (random reproducibility in case of a crash)
                 ),
+            #nuclearInteractionFTF = cms.PSet(
+            #    className = cms.string("fastsim::NuclearInteractionFTF"),
+            #    distCut = cms.double(0.020),
+            #    bertiniLimit = cms.double(3.5), # upper energy limit for the Bertini cascade 
+            #    energyLimit = cms.double(0.1), # Kinetic energy threshold for secondaries 
+            #    ),
             bremsstrahlung = cms.PSet(
                 className = cms.string("fastsim::Bremsstrahlung"),
                 minPhotonEnergy = cms.double(0.1),

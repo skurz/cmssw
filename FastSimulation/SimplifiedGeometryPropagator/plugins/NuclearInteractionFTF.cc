@@ -86,14 +86,13 @@
  * This class computes the probability for hadrons to interact with a 
  * nucleon of the tracker material (inelastically) and then sample
  * nuclear interaction using FTF model of Geant4 
- * The fraction of interaction lengths traversed by the particle in this 
- * tracker layer is determined in MaterialEffectsSimulator as a fraction 
- * the radiation lengths. 
  *
  * \author Vladimir Ivanchenko
  * $Date: 20-Jan-2015
  */ 
 
+
+typedef math::XYZTLorentzVector XYZTLorentzVector;
 
 namespace fastsim
 {
@@ -419,7 +418,9 @@ void fastsim::NuclearInteractionFTF::interact(fastsim::Particle & particle, cons
     G4HadFinalState* result;
 
     // elastic interaction
-    if(random.flatShoot()*(intLengthElastic + intLengthInelastic) > intLengthElastic) {
+    // TODO: Is this condition correct?
+    // In the original code, '>' was used which did not make sense to me
+    if(random.flatShoot() < intLengthElastic / (intLengthElastic + intLengthInelastic)) {
         result = theDiffuseElastic->ApplyYourself(theProjectile, targetNucleus);
         G4ThreeVector dirnew = result->GetMomentumChange().unit();
         double cost = (dir*dirnew);
@@ -432,7 +433,7 @@ void fastsim::NuclearInteractionFTF::interact(fastsim::Particle & particle, cons
         if (sint > theDistCut) { 
             secondaries.emplace_back(new fastsim::Particle(thePid
                 ,particle.position()
-                ,math::XYZTLorentzVector(curr4Mom.px(), curr4Mom.py(), curr4Mom.pz(), curr4Mom.e())));
+                ,XYZTLorentzVector(curr4Mom.px(), curr4Mom.py(), curr4Mom.pz(), curr4Mom.e())));
 
             if(particle.charge() != 0){
                 secondaries.back()->setMotherDeltaR(particle.momentum());
@@ -486,13 +487,13 @@ void fastsim::NuclearInteractionFTF::interact(fastsim::Particle & particle, cons
 
                         secondaries.emplace_back(new fastsim::Particle(22
                                 ,particle.position()
-                                ,math::XYZTLorentzVector(lv.px()/CLHEP::GeV, lv.py()/CLHEP::GeV, lv.pz()/CLHEP::GeV, lv.e()/CLHEP::GeV)));
+                                ,XYZTLorentzVector(lv.px()/CLHEP::GeV, lv.py()/CLHEP::GeV, lv.pz()/CLHEP::GeV, lv.e()/CLHEP::GeV)));
 
                         curr4Mom -= lv;
                         if(curr4Mom.e() > theEnergyLimit) { 
                             secondaries.emplace_back(new fastsim::Particle(22
                                 ,particle.position()
-                                ,math::XYZTLorentzVector(curr4Mom.px()/CLHEP::GeV, curr4Mom.py()/CLHEP::GeV, curr4Mom.pz()/CLHEP::GeV, curr4Mom.e()/CLHEP::GeV)));
+                                ,XYZTLorentzVector(curr4Mom.px()/CLHEP::GeV, curr4Mom.py()/CLHEP::GeV, curr4Mom.pz()/CLHEP::GeV, curr4Mom.e()/CLHEP::GeV)));
                         }
 
                         // The mother particle is destroyed
@@ -505,7 +506,7 @@ void fastsim::NuclearInteractionFTF::interact(fastsim::Particle & particle, cons
                         if(curr4Mom.e() > theEnergyLimit + dp->GetParticleDefinition()->GetPDGMass()){
                             secondaries.emplace_back(new fastsim::Particle(daughterID
                                 ,particle.position()
-                                ,math::XYZTLorentzVector(curr4Mom.px()/CLHEP::GeV, curr4Mom.py()/CLHEP::GeV, curr4Mom.pz()/CLHEP::GeV, curr4Mom.e()/CLHEP::GeV)));
+                                ,XYZTLorentzVector(curr4Mom.px()/CLHEP::GeV, curr4Mom.py()/CLHEP::GeV, curr4Mom.pz()/CLHEP::GeV, curr4Mom.e()/CLHEP::GeV)));
 
                             if(particle.charge() != 0 && dp->GetParticleDefinition()->GetPDGCharge() != 0){
                                 secondaries.back()->setMotherDeltaR(particle.momentum());
