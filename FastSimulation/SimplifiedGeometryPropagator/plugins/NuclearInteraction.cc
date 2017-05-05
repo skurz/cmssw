@@ -553,10 +553,10 @@ void fastsim::NuclearInteraction::interact(fastsim::Particle & particle, const S
 
                 // Add a RawParticle with the proper energy in the c.m frame of 
                 // the nuclear interaction
-                double energy = std::sqrt( aParticle.px*aParticle.px
+                double energy = std::sqrt(aParticle.px*aParticle.px
                     + aParticle.py*aParticle.py
                     + aParticle.pz*aParticle.pz
-                    + aParticle.mass*aParticle.mass/(ecm*ecm) );
+                    + aParticle.mass*aParticle.mass/(ecm*ecm));
 
                 XYZTLorentzVector daugtherMomentum(aParticle.px*ecm, aParticle.py*ecm, aParticle.pz*ecm, energy*ecm);
 
@@ -575,6 +575,7 @@ void fastsim::NuclearInteraction::interact(fastsim::Particle & particle, const S
 
                 // TODO: aParticle also has to be charged, only then the mother should be set
                 // Unfortunately, NUEvent::NUParticle does not contain any info about the charge
+                // Did some tests and effect is absolutely negligible!
                 if(particle.charge() != 0){
                     secondaries.back()->setMotherDeltaR(particle.momentum());
                     secondaries.back()->setMotherPdgId(pdgId);
@@ -594,7 +595,8 @@ void fastsim::NuclearInteraction::interact(fastsim::Particle & particle, const S
 
         // Simulate a stopping hadron (low momentum)
         }else if(pHadron < 4. && elastic > 1.- (inelastic4*theInelasticLength) / theTotalInteractionLength){ 
-            // A fake particle with 0 momentum as a daughter! (Simon: why is this necessary?)
+            // A fake particle with 0 momentum as a daughter!
+            // Simon: why is this necessary? Can probably be removed
             secondaries.emplace_back(new fastsim::Particle(22, particle.position(), XYZTLorentzVector(0., 0., 0., 0.)));
 
             // The particle is destroyed
