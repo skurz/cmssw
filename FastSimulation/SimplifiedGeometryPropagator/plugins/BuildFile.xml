@@ -10,8 +10,6 @@
 
 <use name="SimDataFormats/EncodedEventId"/>
 
-<use name="MagneticField/UniformEngine"/>
-
 <use name="FastSimulation/TrajectoryManager"/>
 <use name="FastSimulation/SimplifiedGeometryPropagator"/>
 
