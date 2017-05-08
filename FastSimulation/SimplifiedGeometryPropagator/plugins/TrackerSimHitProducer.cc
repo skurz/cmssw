@@ -4,7 +4,7 @@
 // framework
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "MagneticField/UniformEngine/src/UniformMagneticField.h"
+#include "MagneticField/UniformEngine/interface/UniformMagneticField.h"
 
 // tracking
 #include "TrackingTools/DetLayers/interface/DetLayer.h"

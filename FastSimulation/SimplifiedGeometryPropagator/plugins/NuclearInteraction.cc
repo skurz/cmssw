@@ -595,10 +595,6 @@ void fastsim::NuclearInteraction::interact(fastsim::Particle & particle, const S
 
         // Simulate a stopping hadron (low momentum)
         }else if(pHadron < 4. && elastic > 1.- (inelastic4*theInelasticLength) / theTotalInteractionLength){ 
-            // A fake particle with 0 momentum as a daughter!
-            // Simon: why is this necessary? Can probably be removed
-            secondaries.emplace_back(new fastsim::Particle(22, particle.position(), XYZTLorentzVector(0., 0., 0., 0.)));
-
             // The particle is destroyed
             particle.momentum().SetXYZT(0., 0., 0., 0.);
         }

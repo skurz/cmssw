@@ -11,7 +11,7 @@
 
 #include "RecoTracker/Record/interface/TrackerRecoGeometryRecord.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
-#include "MagneticField/UniformEngine/src/UniformMagneticField.h"
+#include "MagneticField/UniformEngine/interface/UniformMagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/Geometry.h"
 
