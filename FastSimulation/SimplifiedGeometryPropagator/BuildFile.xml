@@ -19,7 +19,6 @@
 <use name="DataFormats/Math"/>
 
 <use name="MagneticField/Engine"/>
-<use name="MagneticField/UniformEngine"/>
 <use name="MagneticField/Records"/>
 
 <use name="FastSimulation/TrajectoryManager"/>
