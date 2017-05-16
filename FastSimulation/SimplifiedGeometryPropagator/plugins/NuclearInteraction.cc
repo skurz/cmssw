@@ -322,7 +322,7 @@ void fastsim::NuclearInteraction::interact(fastsim::Particle & particle, const S
     //
     // no valid PDGid
     //
-    if(abs(pdgId) < 100 || abs(pdgId) > 1000000)
+    if(abs(pdgId) <= 100 || abs(pdgId) >= 1000000)
     {
     return;
     }
@@ -423,6 +423,7 @@ void fastsim::NuclearInteraction::interact(fastsim::Particle & particle, const S
                                     rotated.Y(),
                                     rotated.Z(),
                                     particle.momentum().E())));
+            
 
             if(particle.charge() != 0){
                 secondaries.back()->setMotherDeltaR(particle.momentum());

@@ -332,7 +332,7 @@ void fastsim::NuclearInteractionFTF::interact(fastsim::Particle & particle, cons
     //
     // no valid PDGid
     //
-    if(abs(thePid) < 100 || abs(thePid) > 1000000)
+    if(abs(thePid) <= 100 || abs(thePid) >= 1000000)
     {
     return;
     }
@@ -508,7 +508,7 @@ void fastsim::NuclearInteractionFTF::interact(fastsim::Particle & particle, cons
                                 ,particle.position()
                                 ,XYZTLorentzVector(curr4Mom.px()/CLHEP::GeV, curr4Mom.py()/CLHEP::GeV, curr4Mom.pz()/CLHEP::GeV, curr4Mom.e()/CLHEP::GeV)));
 
-                            if(particle.charge() != 0 && dp->GetParticleDefinition()->GetPDGCharge() != 0){
+                            if(particle.charge() != 0 && std::abs(particle.charge()-dp->GetParticleDefinition()->GetPDGCharge()) < 1E-10){
                                 secondaries.back()->setMotherDeltaR(particle.momentum());
                                 secondaries.back()->setMotherPdgId(particle.getMotherDeltaR() == -1 ? particle.pdgId() : particle.getMotherPdgId());
                                 secondaries.back()->setMotherSimTrackIndex(particle.simTrackIndex());

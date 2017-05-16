@@ -160,14 +160,14 @@ double fastsim::HelixTrajectory::nextCrossingTimeC(const BarrelSimplifiedGeometr
 
             // if the particle is already on the layer,
             // we need to make sure the 2nd solution is picked.
-            if(std::abs(phi1 - phi_)*radius_ < 1e-3){
+            if(std::abs(phi1 - phi_)*radius_ < 1e-2){
                 return t2*fastsim::Constants::speedOfLight;
             }
-            if(std::abs(phi2 - phi_)*radius_ < 1e-3){
+            if(std::abs(phi2 - phi_)*radius_ < 1e-2){
                 return t1*fastsim::Constants::speedOfLight;
             }
 
-            if(std::abs(phi1 - phi_)*radius_ < 1e-3 && std::abs(phi2 - phi_)*radius_ < 1e-3){
+            if(std::abs(phi1 - phi_)*radius_ < 1e-2 && std::abs(phi2 - phi_)*radius_ < 1e-2){
                 throw cms::Exception("fastsim::HelixTrajectory::nextCrossingTimeC") << "should not happen. boundaries too loose!";
             }
 
@@ -232,7 +232,7 @@ double fastsim::HelixTrajectory::nextCrossingTimeC(const BarrelSimplifiedGeometr
     }
 
     // If particle already on layer return -1 (unless second solution also very small):
-    if(std::abs(delPhi)*radius_ < 1e-3){
+    if(std::abs(delPhi)*radius_ < 1e-2){
         if(twoSolutions){
             if(delPhi == delPhi1 && std::abs(delPhi2) < 1e-2) return delPhi2 / phiSpeed_ * fastsim::Constants::speedOfLight;
             else if(delPhi == delPhi2 && std::abs(delPhi1) < 1e-2) return delPhi1 / phiSpeed_ * fastsim::Constants::speedOfLight;
