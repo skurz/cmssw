@@ -32,6 +32,11 @@ fastSimProducer = cms.EDProducer(
                 minPhotonEnergy = cms.double(0.1),
                 minPhotonEnergyFraction = cms.double(0.005)
                 ),
+            #muonBremsstrahlung = cms.PSet(
+            #    className = cms.string("fastsim::MuonBremsstrahlung"),
+            #    minPhotonEnergy = cms.double(0.1),
+            #    minPhotonEnergyFraction = cms.double(0.005)
+            #    ),
             energyLoss = cms.PSet(
                 className = cms.string("fastsim::EnergyLoss"),
                 minMomentumCut = cms.double(0.1)
