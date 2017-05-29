@@ -68,7 +68,7 @@ namespace fastsim
     double theHadronEnergy; 
     std::string inputFile;
 
-    std::vector< std::vector<TFile*> > theFiles;
+    TFile* theFile = 0;
     std::vector< std::vector<TTree*> > theTrees;
     std::vector< std::vector<TBranch*> > theBranches;
     std::vector< std::vector<NUEvent*> > theNUEvents;
@@ -196,7 +196,7 @@ fastsim::NuclearInteraction::NuclearInteraction(const std::string & name,const e
 
     // Prepare the map of files
     // Loop over the particle names
-    std::vector<TFile*> aVFile(theHadronEN.size(),static_cast<TFile*>(0));
+    TFile* aVFile=0;
     std::vector<TTree*> aVTree(theHadronEN.size(),static_cast<TTree*>(0));
     std::vector<TBranch*> aVBranch(theHadronEN.size(),static_cast<TBranch*>(0));
     std::vector<NUEvent*> aVNUEvents(theHadronEN.size(),static_cast<NUEvent*>(0));
@@ -206,7 +206,6 @@ fastsim::NuclearInteraction::NuclearInteraction(const std::string & name,const e
     std::vector<unsigned> aVNumberOfInteractions(theHadronEN.size(),static_cast<unsigned>(0));
     std::vector<std::string> aVFileName(theHadronEN.size(),static_cast<std::string>(""));
     std::vector<double> aVHadronCM(theHadronEN.size(),static_cast<double>(0));
-    theFiles.resize(theHadronNA.size());
     theTrees.resize(theHadronNA.size());
     theBranches.resize(theHadronNA.size());
     theNUEvents.resize(theHadronNA.size());
@@ -216,8 +215,8 @@ fastsim::NuclearInteraction::NuclearInteraction(const std::string & name,const e
     theNumberOfInteractions.resize(theHadronNA.size());
     theFileNames.resize(theHadronNA.size());
     theHadronCM.resize(theHadronNA.size());
+    theFile = aVFile;
     for(unsigned iname=0; iname<theHadronNA.size(); ++iname){ 
-        theFiles[iname] = aVFile;
         theTrees[iname] = aVTree;
         theBranches[iname] = aVBranch;
         theNUEvents[iname] = aVNUEvents;
@@ -240,7 +239,12 @@ fastsim::NuclearInteraction::NuclearInteraction(const std::string & name,const e
     myOutputFile.open("NuclearInteractionOutputFile.txt");
     myOutputBuffer = 0;
 
-    // Open the root files
+    // Open the root file
+    edm::FileInPath myDataFile("FastSimulation/MaterialEffects/data/NuclearInteractions.root");
+    fullPath = myDataFile.fullPath();
+    theFile = TFile::Open(fullPath.c_str());
+
+    // Open the trees
     unsigned fileNb = 0;
     for(unsigned iname=0; iname<theHadronNA.size(); ++iname){
         for(unsigned iene=0; iene<theHadronEN.size(); ++iene){
@@ -249,17 +253,14 @@ fastsim::NuclearInteraction::NuclearInteraction(const std::string & name,const e
             filename << "NuclearInteractionsVal_" << theHadronNA[iname] << "_E"<< theEne << ".root";
             theFileNames[iname][iene] = filename.str();
 
-            edm::FileInPath myDataFile("FastSimulation/MaterialEffects/data/"+theFileNames[iname][iene]);
-            fullPath = myDataFile.fullPath();
-            theFiles[iname][iene] = TFile::Open(fullPath.c_str());
-            if(!theFiles[iname][iene])throw cms::Exception("FastSimulation/MaterialEffects") 
-                << "File " << theFileNames[iname][iene] << " " << fullPath <<  " not found ";
             ++fileNb;
-            theTrees[iname][iene] = (TTree*) theFiles[iname][iene]->Get("NuclearInteractions"); 
-            if(!theTrees[iname][iene])throw cms::Exception("FastSimulation/MaterialEffects") 
-                << "Tree with name NuclearInteractions not found in " << theFileNames[iname][iene];
+            std::string treeName="NuclearInteractions_"+theHadronNA[iname]+"_E"+std::to_string(int(theEne));
+            theTrees[iname][iene] = (TTree*) theFile->Get(treeName.c_str()); 
+
+            if ( !theTrees[iname][iene] ) throw cms::Exception("FastSimulation/MaterialEffects") 
+                << "Tree with name " << treeName << " not found ";
             theBranches[iname][iene] = theTrees[iname][iene]->GetBranch("nuEvent");
-            if(!theBranches[iname][iene])throw cms::Exception("FastSimulation/MaterialEffects") 
+            if ( !theBranches[iname][iene] ) throw cms::Exception("FastSimulation/MaterialEffects") 
                 << "Branch with name nuEvent not found in " << theFileNames[iname][iene];
 
             theNUEvents[iname][iene] = new NUEvent();
@@ -293,15 +294,8 @@ fastsim::NuclearInteraction::~NuclearInteraction() {
     // Close all local files
     // Among other things, this allows the TROOT destructor to end up 
     // without crashing, while trying to close these files from outside
-    for(unsigned ifile=0; ifile<theFiles.size(); ++ifile){ 
-        for(unsigned iene=0; iene<theFiles[ifile].size(); ++iene){
-            auto file = theFiles[ifile][iene];
-            if(file){
-                file->Close();
-                delete file;
-            }
-        }
-    }
+    theFile->Close();
+    delete theFile;
 
     for(auto& vEvents: theNUEvents){
         for(auto evtPtr: vEvents){
