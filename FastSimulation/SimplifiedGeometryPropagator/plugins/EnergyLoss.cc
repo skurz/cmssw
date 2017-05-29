@@ -38,6 +38,9 @@ namespace fastsim
     private:
     LandauFluctuationGenerator theGenerator;
     double minMomentum_;
+    double density_;
+    double radLenInCm_;
+    double A_, Z_;
     };
 }
 
@@ -46,10 +49,17 @@ fastsim::EnergyLoss::EnergyLoss(const std::string & name,const edm::ParameterSet
 {
     // Set the minimal momentum
     minMomentum_ = cfg.getParameter<double>("minMomentumCut");
+    A_ = cfg.getParameter<double>("A");
+    Z_ = cfg.getParameter<double>("Z");
+    density_ = cfg.getParameter<double>("density");
+    radLenInCm_ = cfg.getParameter<double>("radLen");
 }
 
 void fastsim::EnergyLoss::interact(fastsim::Particle & particle, const SimplifiedGeometry & layer,std::vector<std::unique_ptr<fastsim::Particle> > & secondaries,const RandomEngineAndDistribution & random)
 {
+    // the energy deposit in the layer
+    particle.setEnergyDeposit(0);
+
     //
     // no material
     //
@@ -75,17 +85,11 @@ void fastsim::EnergyLoss::interact(fastsim::Particle & particle, const Simplifie
         return;
     }
 
-    // silicon
-    double A = 28.0855;
-    double Z = 14.0000;
-    double density = 2.329;
-    double radLenIncm = 9.360;
-
     ///Mean excitation energy (in GeV)
-    double excitE = 12.5E-9*Z;
+    double excitE = 12.5E-9*Z_;
     
     // The thickness in cm
-    double thick = radLengths * radLenIncm;
+    double thick = radLengths * radLenInCm_;
 
     // This is a simple version (a la PDG) of a dE/dx generator.
     // It replaces the buggy GEANT3 -> C++ former version.
@@ -100,7 +104,7 @@ void fastsim::EnergyLoss::interact(fastsim::Particle & particle, const Simplifie
     double charge2 = particle.charge() * particle.charge();
 
     // Energy loss spread in GeV
-    double eSpread  = 0.1536E-3*charge2*(Z/A)*density*thick/beta2;
+    double eSpread  = 0.1536E-3*charge2*(Z_/A_)*density_*thick/beta2;
 
     // Most probable energy loss (from the integrated Bethe-Bloch equation)
     double mostProbableLoss = eSpread * ( log ( 2.*fastsim::Constants::eMass*beta2*gama2*eSpread
@@ -111,12 +115,17 @@ void fastsim::EnergyLoss::interact(fastsim::Particle & particle, const Simplifie
     double dedx = mostProbableLoss + eSpread * theGenerator.landau(&random);
 
     // Compute the new energy and momentum
-    double aBitAboveMass = particle.momentum().mass()*1.0001;
-    double newE = std::max(aBitAboveMass,particle.momentum().e()-dedx);
-    double fac  = std::sqrt((newE*newE-m2)/p2);
+    double newE = particle.momentum().e() - dedx;
+    if(newE < particle.momentum().mass()){
+        particle.momentum().SetXYZT(0.,0.,0.,0.);
+        // Energy deposit in detector
+        particle.setEnergyDeposit(particle.momentum().e() - particle.momentum().mass());
+        return;
+    }
+    double fac  = std::sqrt((newE*newE-m2)/p2);    
 
     // Energy deposit in detector
-    particle.setEnergyDeposit(particle.momentum().e()-newE);
+    particle.setEnergyDeposit(dedx);
 
     // Update the momentum
     particle.momentum().SetXYZT(particle.momentum().Px()*fac,

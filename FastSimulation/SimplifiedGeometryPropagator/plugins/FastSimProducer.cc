@@ -155,7 +155,7 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		{
 		    LogDebug(MESSAGECATEGORY) << "   moved to next layer: " << *layer;
 			LogDebug(MESSAGECATEGORY) << "   new state: " << *particle;
-		    
+
 		    // perform interaction between layer and particle
 		    // do only if there is actual material
 		    if(layer->getThickness(particle->position(), particle->momentum()) > 1E-10){

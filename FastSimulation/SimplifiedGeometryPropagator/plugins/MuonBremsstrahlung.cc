@@ -36,39 +36,27 @@ namespace fastsim
     class MuonBremsstrahlung : public InteractionModel
     {
     public:
-        // Constructor
         MuonBremsstrahlung(const std::string & name,const edm::ParameterSet & cfg);
-        // Destructor
         ~MuonBremsstrahlung(){;};
-        // Generate Bremsstrahlung photons:
         void interact(Particle & particle, const SimplifiedGeometry & layer, std::vector<std::unique_ptr<Particle> > & secondaries, const RandomEngineAndDistribution & random);
       private:
-        // Compute Bremsstrahlung photon energy and angles (if exist):
         math::XYZTLorentzVector brem(Particle & particle, 
       			 double xmin,
       			 const RandomEngineAndDistribution & random) const;    
-        // A universal angular distribution - still from GEANT.
         double gbteth(const double ener,
       	  const double partm,
       	  const double efrac,
       	  const RandomEngineAndDistribution & random) const ;
-        // Generate numbers according to a Poisson distribution of mean ymu.
         unsigned int poisson(double ymu, const RandomEngineAndDistribution & random);
-        // Petrukhin function defined in ROOT
-        TF1* Petrfunc;
-        //Function of Muom Brem using  nuclear-electron screening correction from G4 style
+        //Function of Muom Brem using nuclear-electron screening correction from G4 style
         static double PetrukhinFunc(double *x, double *p);
         // Parameters:
-        // The minimum photon energy to be radiated, in GeV
+        TF1* Petrfunc;
         double minPhotonEnergy_;
-        // The minimum photon fractional energy (wrt that of the electron)
         double minPhotonEnergyFraction_;
-        // Density
-        //double density_;
-        // Radiation length
-        //double radLen_;
-        // Material:
-        //int A_, Z_;
+        double density_;
+        double radLenInCm_;
+        double A_, Z_;
     };
 }
 
@@ -77,10 +65,10 @@ fastsim::MuonBremsstrahlung::MuonBremsstrahlung(const std::string & name, const 
 {
     minPhotonEnergy_ = cfg.getParameter<double>("minPhotonEnergy");
     minPhotonEnergyFraction_ = cfg.getParameter<double>("minPhotonEnergyFraction");
-    //A_ = cfg.getParameter<double>("A");
-    //Z_ = cfg.getParameter<double>("Z");
-    //density_ = cfg.getParameter<double>("density");
-    //radLen_ = cfg.getParameter<double>("radLen");
+    A_ = cfg.getParameter<double>("A");
+    Z_ = cfg.getParameter<double>("Z");
+    density_ = cfg.getParameter<double>("density");
+    radLenInCm_ = cfg.getParameter<double>("radLen");
 }
 
 
@@ -89,12 +77,6 @@ void fastsim::MuonBremsstrahlung::interact(fastsim::Particle & particle,
 					   std::vector<std::unique_ptr<fastsim::Particle> > & secondaries,
 					   const RandomEngineAndDistribution & random)
 {
-    // silicon
-    double A = 28.0855;
-    double Z = 14.0000;
-    double density = 2.329;
-    double radLenIncm = 9.360;
-
     // only consider muons
     if(abs(particle.pdgId())!=13)
     {
@@ -120,7 +102,7 @@ void fastsim::MuonBremsstrahlung::interact(fastsim::Particle & particle,
     }
 
     // muon must have more energy than minimum photon energy
-    if(particle.momentum().E() < minPhotonEnergy_) 
+    if(particle.momentum().E() - particle.momentum().mass() < minPhotonEnergy_) 
     {
         return;
     }
@@ -140,14 +122,14 @@ void fastsim::MuonBremsstrahlung::interact(fastsim::Particle & particle,
     // create TF1 using a free C function
     Petrfunc = new TF1("Petrfunc",PetrukhinFunc,xmin,xmax,npar);
     //Setting parameters
-    Petrfunc->SetParameters(particle.momentum().E(),A,Z);
+    Petrfunc->SetParameters(particle.momentum().E(),A_,Z_);
     //d = distance for several materials
     //X0 = radLen
     //d = radLengths * X0(for tracker,yoke,ECAL and HCAL)
-    double distance = radLengths * radLenIncm;
+    double distance = radLengths * radLenInCm_;
     //Integration
     // Fixed previous which used Petrfunc->Integral(0.,1.) -> does not make sense
-    double bremProba = density * distance *(fastsim::Constants::NA/A) * (Petrfunc->Integral(xmin, xmax));
+    double bremProba = density_ * distance *(fastsim::Constants::NA/A_) * (Petrfunc->Integral(xmin, xmax));
     if(bremProba < 1E-10)
     {
         return;
@@ -169,7 +151,7 @@ void fastsim::MuonBremsstrahlung::interact(fastsim::Particle & particle,
     for(unsigned int i=0; i<nPhotons; ++i)
     {
         // Check that there is enough energy left.
-        if(particle.momentum().E() < minPhotonEnergy_)break;
+        if(particle.momentum().E() - particle.momentum().mass() < minPhotonEnergy_)break;
         
         // Add a photon
         secondaries.emplace_back(new fastsim::Particle(22,particle.position(),brem(particle, xmin, random)));

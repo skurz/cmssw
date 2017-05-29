@@ -40,6 +40,7 @@ namespace fastsim
     private:
     double gbteth(double ener,double partm,double efrac, const RandomEngineAndDistribution & random) const;
     double minPhotonEnergy_;
+    double Z_;
     };
 }
 
@@ -48,6 +49,7 @@ fastsim::PairProduction::PairProduction(const std::string & name,const edm::Para
 {
     // Set the minimal photon energy for possible conversion 
     minPhotonEnergy_ = cfg.getParameter<double>("photonEnergyCut");
+    Z_ = cfg.getParameter<double>("Z");
 }
 
 
@@ -164,8 +166,7 @@ fastsim::PairProduction::gbteth(const double ener,
 {
     const double alfa = 0.625;
     
-    int Z = 14; // silicon
-    const double d = 0.13*(0.8+1.3/Z)*(100.0+(1.0/ener))*(1.0+efrac);
+    const double d = 0.13*(0.8+1.3/Z_)*(100.0+(1.0/ener))*(1.0+efrac);
     const double w1 = 9.0/(9.0+d);
     const double umax = ener*M_PI/partm;
     double u;

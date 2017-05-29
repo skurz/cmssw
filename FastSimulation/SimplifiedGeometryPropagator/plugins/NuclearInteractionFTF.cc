@@ -418,9 +418,7 @@ void fastsim::NuclearInteractionFTF::interact(fastsim::Particle & particle, cons
     G4HadFinalState* result;
 
     // elastic interaction
-    // TODO: Is this condition correct?
-    // In the original code, '>' was used which did not make sense to me
-    if(random.flatShoot() < intLengthElastic / (intLengthElastic + intLengthInelastic)) {
+    if(random.flatShoot() > intLengthElastic / (intLengthElastic + intLengthInelastic)) {
         result = theDiffuseElastic->ApplyYourself(theProjectile, targetNucleus);
         G4ThreeVector dirnew = result->GetMomentumChange().unit();
         double cost = (dir*dirnew);

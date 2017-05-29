@@ -43,6 +43,7 @@ namespace fastsim
     private:
     XYZVector orthogonal(const XYZVector& aVector) const;
 	double minPt_;
+    double radLenInCm_;
     };
 }
 
@@ -51,6 +52,7 @@ fastsim::MultipleScattering::MultipleScattering(const std::string & name,const e
 {
     // Set the minimal pT for interaction
     minPt_ = cfg.getParameter<double>("minPt");
+    radLenInCm_ = cfg.getParameter<double>("radLen");
 }
 
 
@@ -78,10 +80,6 @@ void fastsim::MultipleScattering::interact(fastsim::Particle & particle, const S
     {
 	return;
     }
-
-    // silicon
-    double radLenIncm = 9.360;
-
 
     double p2 = particle.momentum().Vect().Mag2();
     double m2 = particle.momentum().mass()*particle.momentum().mass();
@@ -114,9 +112,9 @@ void fastsim::MultipleScattering::interact(fastsim::Particle & particle, const S
     // are silicon only to determine the thickness) in the directions orthogonal
     // to the vector normal to the surface
     double xp = (cos(phi)*theta/2. + random.gaussShoot(0.,theta0)/sqrt(12.))
-              * radLengths * radLenIncm;       
+              * radLengths * radLenInCm_;       
     double yp = (sin(phi)*theta/2. + random.gaussShoot(0.,theta0)/sqrt(12.))
-              * radLengths * radLenIncm;
+              * radLengths * radLenInCm_;
 
     // Determine a unitary vector tangent to the surface
     XYZVector normal;
@@ -125,7 +123,7 @@ void fastsim::MultipleScattering::interact(fastsim::Particle & particle, const S
     }
     else{
         double norm = particle.position().Rho();
-        normal = XYZVector(particle.position().Px() / norm, particle.position().Py() / norm, 0.);
+        normal = XYZVector(particle.position().X() / norm, particle.position().Y() / norm, 0.);
     }
     XYZVector tangent = orthogonal(normal); 
     // The total displacement 

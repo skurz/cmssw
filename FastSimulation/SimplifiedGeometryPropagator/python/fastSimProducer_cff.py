@@ -13,7 +13,9 @@ fastSimProducer = cms.EDProducer(
     interactionModels = cms.PSet(
             pairProduction = cms.PSet(
                 className = cms.string("fastsim::PairProduction"),
-                photonEnergyCut = cms.double(0.1)
+                photonEnergyCut = cms.double(0.1),
+                # silicon
+                Z = cms.double(14.0000)
                 ),
             nuclearInteraction = cms.PSet(
                 className = cms.string("fastsim::NuclearInteraction"),
@@ -30,20 +32,34 @@ fastSimProducer = cms.EDProducer(
             bremsstrahlung = cms.PSet(
                 className = cms.string("fastsim::Bremsstrahlung"),
                 minPhotonEnergy = cms.double(0.1),
-                minPhotonEnergyFraction = cms.double(0.005)
+                minPhotonEnergyFraction = cms.double(0.005),
+                # silicon
+                Z = cms.double(14.0000)
                 ),
             #muonBremsstrahlung = cms.PSet(
             #    className = cms.string("fastsim::MuonBremsstrahlung"),
             #    minPhotonEnergy = cms.double(0.1),
-            #    minPhotonEnergyFraction = cms.double(0.005)
+            #    minPhotonEnergyFraction = cms.double(0.005),
+            #    # silicon
+            #    A = cms.double(28.0855),
+            #    Z = cms.double(14.0000),
+            #    density = cms.double(2.329),
+            #    radLen = cms.double(9.360)
             #    ),
             energyLoss = cms.PSet(
                 className = cms.string("fastsim::EnergyLoss"),
-                minMomentumCut = cms.double(0.1)
+                minMomentumCut = cms.double(0.1),
+                # silicon
+                A = cms.double(28.0855),
+                Z = cms.double(14.0000),
+                density = cms.double(2.329),
+                radLen = cms.double(9.360)
                 ),
             multipleScattering = cms.PSet(
                 className = cms.string("fastsim::MultipleScattering"),
-                minPt = cms.double(0.2)
+                minPt = cms.double(0.2),
+                # silicon
+                radLen = cms.double(9.360)
                 ),
             trackerSimHits = cms.PSet(
                 className = cms.string("fastsim::TrackerSimHitProducer"),
