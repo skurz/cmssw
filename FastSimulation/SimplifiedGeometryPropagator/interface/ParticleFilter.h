@@ -4,6 +4,20 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include <vector>
 
+
+///////////////////////////////////////////////
+// ParticleFilter
+//
+// Description: (Kinematic) cuts on the particles that are propagated 
+//
+// Author: Patrick Janot
+// Date: 09 Dez 2003
+//
+// Revision: Class structure modified to match SimplifiedGeometryPropagator
+//           S. Kurz, 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 namespace edm
 {
     class ParameterSet;

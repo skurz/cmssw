@@ -1,6 +1,17 @@
 #ifndef FASTSIM_CONSTANTS_H
 #define FASTSIM_CONSTANTS_H
 
+
+///////////////////////////////////////////////
+// Constants
+//
+// Description: Definition of constants needed for the SimplifiedGeometryPropagator package
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 namespace fastsim
 {
     namespace Constants

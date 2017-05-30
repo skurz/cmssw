@@ -21,15 +21,21 @@
 
 ///////////////////////////////////////////////
 // MuonBremsstrahlung
-// Description: Implementation of Muon bremsstrahlung using the Petrukhin model
-// Authors :Sandro Fonseca de Souza and Andre Sznajder (UERJ/Brazil)
+//
+// Description: Implementation of Bremsstrahlung from mu+/mu- in the tracker layers
+// based on a Petrukhin Model.
+//
+// Authors: Sandro Fonseca de Souza and Andre Sznajder (UERJ/Brazil)
 // Date: 23-Nov-2010
+//
 // Revision: Class structure modified to match SimplifiedGeometryPropagator 
 //           S. Sekmen, 18 May 2017
+//
 // Revision: Code very buggy, PetrukhinFunc return negative values, double bremProba wasn't properly defined etc.
-//           should be all fixed by now
+//           Should be all fixed by now
 //           S. Kurz, 23 May 2017
 //////////////////////////////////////////////////////////
+
 
 namespace fastsim
 {

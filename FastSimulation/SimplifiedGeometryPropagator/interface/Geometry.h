@@ -5,6 +5,17 @@
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/ForwardSimplifiedGeometry.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/BarrelSimplifiedGeometry.h"
 
+
+///////////////////////////////////////////////
+// Geometry
+//
+// Description: Definition the tracker geometry (vector of forward/barrel layers)
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 class GeometricSearchTracker;
 class MagneticField;
 

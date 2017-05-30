@@ -5,6 +5,17 @@
 
 #include "DataFormats/Math/interface/LorentzVector.h"
 
+
+///////////////////////////////////////////////
+// Trajectory
+//
+// Description: Definition the generic trajectory of a particle (base class for helix/straight trajectories)
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 namespace fastsim
 {
     class SimplifiedGeometry;

@@ -35,7 +35,16 @@
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/ParticleManager.h"
 #include "FastSimulation/Particle/interface/ParticleTable.h" // TODO: move this
 
-// other
+
+///////////////////////////////////////////////
+// FastSimProducer
+//
+// Description: The core class of the new SimplifiedGeometryPropagator.
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
 
 class FastSimProducer : public edm::stream::EDProducer<> {
 public:

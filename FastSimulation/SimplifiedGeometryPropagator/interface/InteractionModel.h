@@ -5,6 +5,17 @@
 #include "vector"
 #include "memory"
 
+
+///////////////////////////////////////////////
+// InteractionModel
+//
+// Description: Base class for any interaction models between a particle and a tracker layer
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 namespace edm
 {
     class Event;

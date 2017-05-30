@@ -3,6 +3,17 @@
 
 #include "string"
 
+
+///////////////////////////////////////////////
+// LayerNavigator
+//
+// Description: Handles intersection of particles trajectory and tracker layers
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 namespace fastsim
 {
     class SimplifiedGeometry;

@@ -16,17 +16,17 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 
 
-/** 
- * This class computes the probability for photons to convert into an
- * e+e- pair in the tracker layer. In case, it returns a list of 
- * two particles's (e+ and e-).
- *
- * This version (a la PDG) of a dE/dx generator replaces the buggy 
- * GEANT3 Fortran -> C++ former version (up to FAMOS_0_8_0_pre7).
- *
- * \author Patrick Janot
- * $Date: 24-Dec-2003
- */ 
+///////////////////////////////////////////////
+// PairProduction
+//
+// Description: Implementation of PairProduction in the tracker layers.
+//
+// Author: Patrick Janot
+// Date: 24-Dec-2003
+//
+// Revision: Class structure modified to match SimplifiedGeometryPropagator
+//           S. Kurz, 29 May 2017
+//////////////////////////////////////////////////////////
 
 
 namespace fastsim
@@ -81,10 +81,6 @@ void fastsim::PairProduction::interact(fastsim::Particle & particle, const Simpl
     {
     return;
     }
-
-    // This is a simple version (a la PDG) of a photon conversion generator.
-    // It replaces the buggy GEANT3 -> C++ former version.
-    // Author : Patrick Janot - 7-Jan-2004
 
     //
     // Probability to convert is 7/9*(dx/X0)

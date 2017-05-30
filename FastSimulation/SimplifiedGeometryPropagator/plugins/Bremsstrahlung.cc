@@ -16,18 +16,18 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 
 
-/** 
- * This class computes the number, energy and angles of Bremsstrahlung 
- * photons emitted by electrons and positrons in the tracker layer, 
- * and returns the modified particle after radiation as well as 
- * a list of photons.
- *
- * This version (a la PDG) of a dE/dx generator replaces the buggy 
- * GEANT3 Fortran -> C++ former version (up to FAMOS_0_8_0_pre7).
- *
- * \author Patrick Janot
- * $Date: 25-Dec-2003
- */ 
+///////////////////////////////////////////////
+// MuonBremsstrahlung
+//
+// Description: Implementation of Bremsstrahlung from e+/e- in the tracker layers.
+//
+// Author: Patrick Janot
+// Date: 25-Dec-2003
+//
+// Revision: Class structure modified to match SimplifiedGeometryPropagator
+//           Fixed a bug in which particles could radiate more energy than they have
+//           S. Kurz, 29 May 2017
+//////////////////////////////////////////////////////////
 
 
 namespace fastsim

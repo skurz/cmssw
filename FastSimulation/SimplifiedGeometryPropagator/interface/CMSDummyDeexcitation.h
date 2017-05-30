@@ -1,13 +1,19 @@
 #ifndef FASTSIM_CMSDUMMYDEEXCITATION_H
 #define FASTSIM_CMSDUMMYDEEXCITATION_H
 
-/** 
- * This class is needed as a dummy interface to Geant4  
- * nuclear de-excitation module; no secondary produced
- *
- * \author Vladimir Ivanchenko
- * $Date: 20-Jan-2015
- */ 
+
+///////////////////////////////////////////////
+// CMSDummyDeexcitation
+//
+// Description: Needed as a dummy interface to Geant4 nuclear de-excitation module; no secondary produced
+//
+// Author: Vladimir Ivanchenko
+// Date: 20 Jan 2015
+//
+// Revision: Class structure modified to match SimplifiedGeometryPropagator
+// 			 S. Kurz, 29 May 2017
+//////////////////////////////////////////////////////////
+
 
 #include "G4VPreCompoundModel.hh"
 #include "G4ReactionProductVector.hh"

@@ -13,18 +13,18 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 
 
-/** 
- * This class computes the most probable energy loss by ionization,
- * from a charged particle in the tracker layer, smears it with Landau
- * fluctuations and returns the particle with modified energy. 
- * The tracker material is assumed to be 100% Si - crude approximation.
- *
- * This version (a la PDG) of a dE/dx generator replaces the buggy 
- * GEANT3 Fortran -> C++ former version (up to FAMOS_0_8_0_pre7).
- *
- * \author Patrick Janot
- * $Date: 8-Jan-2004
- */ 
+///////////////////////////////////////////////
+// EnergyLoss
+//
+// Description: Implementation of most probable energy loss by ionization in the tracker layers.
+//
+// Author: Patrick Janot
+// Date: 8-Jan-2004
+//
+// Revision: Class structure modified to match SimplifiedGeometryPropagator
+//           Fixed a bug in which particles could deposit more energy than they have
+//           S. Kurz, 29 May 2017
+//////////////////////////////////////////////////////////
 
 
 namespace fastsim

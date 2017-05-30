@@ -9,7 +9,7 @@
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/BarrelSimplifiedGeometry.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/ForwardSimplifiedGeometry.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/LayerNavigator.h"
-#include "FastSimulation/SimplifiedGeometryPropagator/interface/Trajectory.h"      // new class, to be defined, based on ParticlePropagator
+#include "FastSimulation/SimplifiedGeometryPropagator/interface/Trajectory.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/Particle.h"
 
 /**

@@ -3,6 +3,17 @@
 
 #include "DataFormats/Math/interface/LorentzVector.h"
 
+
+///////////////////////////////////////////////
+// Particle
+//
+// Description: Definition of a generic FastSim Particle which can be propagated through the detector (formerly ParticlePropagator)
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 namespace fastsim
 {
     class Particle

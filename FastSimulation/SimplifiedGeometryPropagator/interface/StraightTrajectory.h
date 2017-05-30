@@ -3,6 +3,17 @@
 
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/Trajectory.h"
 
+
+///////////////////////////////////////////////
+// StraightTrajectory
+//
+// Description: Definition the trajectory of an uncharged particle
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 namespace fastsim
 {
     class StraightTrajectory : public Trajectory

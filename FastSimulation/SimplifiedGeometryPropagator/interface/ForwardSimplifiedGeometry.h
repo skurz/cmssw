@@ -7,6 +7,16 @@
 #include "FWCore/Utilities/interface/Exception.h"
 
 
+///////////////////////////////////////////////
+// ForwardSimplifiedGeometry
+//
+// Description: Implementation of a forward detector layer
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 namespace fastsim{
 
     class ForwardSimplifiedGeometry : public SimplifiedGeometry

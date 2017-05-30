@@ -16,19 +16,19 @@
 #include "DataFormats/Math/interface/Vector3D.h"
 
 
-/** 
- * This class computes the direction change by multiple scattering 
- * of a charged particle in the tracker layer, and returns the 
- * particle with the modified momentum direction. The tracker 
- * material is assumed to be 100% Si and the Tracker layers are 
- * assumed infinitely thin.
- *
- * This version (a la PDG) of a multiple scattering simulator replaces 
- * the buggy GEANT3 Fortran -> C++ former version (up to FAMOS_0_8_0_pre7).
- *
- * \author Patrick Janot
- * $Date: 8-Jan-2004
- */ 
+///////////////////////////////////////////////
+// MultipleScattering
+//
+// Description: Implementation of multiple scattering in the tracker layers (assumes constant properties of material).
+//
+// Author: Patrick Janot
+// Date: 8-Jan-2004
+//
+// Revision: Class structure modified to match SimplifiedGeometryPropagator
+//           Fixed a bug in which particles could no longer be on the layer after scattering
+//           S. Kurz, 29 May 2017
+//////////////////////////////////////////////////////////
+
 
 typedef math::XYZVector XYZVector;
 

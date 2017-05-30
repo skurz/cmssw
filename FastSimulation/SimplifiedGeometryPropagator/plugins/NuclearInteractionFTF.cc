@@ -82,14 +82,18 @@
 #include "G4SystemOfUnits.hh"
 
 
-/** 
- * This class computes the probability for hadrons to interact with a 
- * nucleon of the tracker material (inelastically) and then sample
- * nuclear interaction using FTF model of Geant4 
- *
- * \author Vladimir Ivanchenko
- * $Date: 20-Jan-2015
- */ 
+///////////////////////////////////////////////
+// NuclearInteractionFTF
+//
+// Description: Implementation of nuclear interactions of hadrons in the tracker layers (based on FTF model of Geant4).
+//
+// Author: Vladimir Ivanchenko
+// Date: 20-Jan-2015
+//
+// Revision: Class structure modified to match SimplifiedGeometryPropagator
+//           Fixed a bug in which units where not properly converted from G4 to FastSim standard
+//           S. Kurz, 29 May 2017
+//////////////////////////////////////////////////////////
 
 
 typedef math::XYZTLorentzVector XYZTLorentzVector;

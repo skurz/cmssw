@@ -5,10 +5,20 @@
 #include "HepMC/GenEvent.h"
 #include "vector"
 #include "memory"
-// TODO: TREAT PARTICLE FILTER PROPERLY
 
 #include "SimDataFormats/Track/interface/SimTrack.h"
 #include "SimDataFormats/Vertex/interface/SimVertex.h"
+
+
+///////////////////////////////////////////////
+// ParticleManager
+//
+// Description: Manages GenParticles and Secondaries from interactions
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
 
 namespace HepPDT
 {

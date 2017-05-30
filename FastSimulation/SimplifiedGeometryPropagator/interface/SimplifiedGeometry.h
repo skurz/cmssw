@@ -6,6 +6,17 @@
 #include <memory>
 #include <vector>
 
+
+///////////////////////////////////////////////
+// SimplifiedGeometry
+//
+// Description: Implementation of a generic detector layer (base class for forward/barrel layers)
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 class DetLayer;
 class MagneticField;
 class GeometricSearchTracker;

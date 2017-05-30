@@ -121,7 +121,7 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextParticle(const 
     return particle;
 }
 
-// NOTE:  decayer and interactions must provide particles with right units
+
 void fastsim::ParticleManager::addSecondaries(
     const math::XYZTLorentzVector & vertexPosition,
     int parentSimTrackIndex,

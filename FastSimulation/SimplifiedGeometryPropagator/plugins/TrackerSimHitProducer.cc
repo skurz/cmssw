@@ -35,6 +35,17 @@
 #include "CondFormats/External/interface/DetID.h"
 #include "FWCore/Framework/interface/ProducerBase.h"
 
+
+///////////////////////////////////////////////
+// TrackerSimHitProducer
+//
+// Description: Produces SimHits in the tracker layers.
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 typedef std::pair<const GeomDet*,TrajectoryStateOnSurface> DetWithState;
 
 namespace fastsim

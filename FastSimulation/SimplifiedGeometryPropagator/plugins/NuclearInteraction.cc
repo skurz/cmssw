@@ -30,19 +30,22 @@
 #include "FastSimulation/Utilities/interface/RandomEngineAndDistribution.h"
 #include "FastSimDataFormats/NuclearInteractions/interface/NUEvent.h"
 
-
 // Math
 #include "DataFormats/Math/interface/LorentzVector.h"
 
 
-/** 
- * This class computes the probability for hadrons to interact with a 
- * nucleon of the tracker material (inelastically) and then reads a 
- * nuclear interaction randomly from multiple fully simulated files 
- *
- * \author Patrick Janot
- * $Date: 25-Jan-2007
- */ 
+///////////////////////////////////////////////
+// NuclearInteraction
+//
+// Description: Implementation of nuclear interactions of hadrons in the tracker layers (based on fully simulated interactions).
+//
+// Author: Patrick Janot
+// Date: 25-Jan-2007
+//
+// Revision: Class structure modified to match SimplifiedGeometryPropagator
+//           Unified the way, the closest charged daughter is defined
+//           S. Kurz, 29 May 2017
+//////////////////////////////////////////////////////////
 
 
 // TODO: save() function called in destructer. Does that actually make sense?
@@ -546,7 +549,7 @@ void fastsim::NuclearInteraction::interact(fastsim::Particle & particle, const S
             for(unsigned iTrack=firstTrack; iTrack<=lastTrack; ++iTrack){
                 NUEvent::NUParticle aParticle = aNUEvents[ene]->theNUParticles()[iTrack];
 
-                // Add a RawParticle with the proper energy in the c.m frame of 
+                // Add a RawParticle with the proper energy in the c.m. frame of 
                 // the nuclear interaction
                 double energy = std::sqrt(aParticle.px*aParticle.px
                     + aParticle.py*aParticle.py
@@ -568,7 +571,7 @@ void fastsim::NuclearInteraction::interact(fastsim::Particle & particle, const S
                 // Create secondary
                 secondaries.emplace_back(new fastsim::Particle(aParticle.id, particle.position(), daugtherMomentum));
 
-                // TODO: aParticle also has to be charged, only then the mother should be set
+                // aParticle also has to be charged, only then the mother should be set
                 // Unfortunately, NUEvent::NUParticle does not contain any info about the charge
                 // Did some tests and effect is absolutely negligible!
                 if(particle.charge() != 0){
@@ -581,6 +584,7 @@ void fastsim::NuclearInteraction::interact(fastsim::Particle & particle, const S
             // The particle is destroyed
             particle.momentum().SetXYZT(0., 0., 0., 0.);
 
+            // Note from previous version of code: don't understand it
             // ERROR The way this loops through the events breaks
             // replay. Which events are retrieved depends on
             // which previous events were processed.

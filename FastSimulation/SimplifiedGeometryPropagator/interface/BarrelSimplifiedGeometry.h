@@ -7,6 +7,17 @@
 #include "FWCore/Utilities/interface/Exception.h"
 #include "TH1F.h"
 
+
+///////////////////////////////////////////////
+// BarrelSimplifiedGeometry
+//
+// Description: Implementation of a barrel detector layer
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 namespace fastsim{
 
     class BarrelSimplifiedGeometry : public SimplifiedGeometry

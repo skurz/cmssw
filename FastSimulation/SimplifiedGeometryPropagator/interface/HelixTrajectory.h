@@ -4,6 +4,17 @@
 
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/Trajectory.h"
 
+
+///////////////////////////////////////////////
+// HelixTrajectory
+//
+// Description: Definition the trajectory of a charged particle
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
 namespace fastsim
 {
     class HelixTrajectory : public Trajectory
