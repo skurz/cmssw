@@ -1,0 +1,98 @@
+#ifndef FASTSIM_PARTICLEMANAGER_H
+#define FASTSIM_PARTICLEMANAGER_H
+
+#include "DataFormats/Math/interface/LorentzVector.h"
+#include "HepMC/GenEvent.h"
+#include "vector"
+#include "memory"
+
+#include "SimDataFormats/Track/interface/SimTrack.h"
+#include "SimDataFormats/Vertex/interface/SimVertex.h"
+
+
+///////////////////////////////////////////////
+// ParticleManager
+//
+// Description: Manages GenParticles and Secondaries from interactions
+//
+// Author: L. Vanelderen, S. Kurz
+// Date: 29 May 2017
+//////////////////////////////////////////////////////////
+
+
+namespace HepPDT
+{
+    class ParticleDataTable;
+}
+
+//class SimTrack;
+//class SimVertex;
+class RandomEngineAndDistribution;
+
+namespace fastsim {
+    class Particle;
+    class ParticleFilter;
+    class ParticleManager
+    {
+
+    public:
+
+	ParticleManager(
+	    const HepMC::GenEvent & genEvent,
+	    const HepPDT::ParticleDataTable & particleDataTable,
+	    double beamPipeRadius,
+	    double deltaRchargedMother,
+	    const ParticleFilter & particleFilter,
+	    std::unique_ptr<std::vector<SimTrack> > & simTracks,
+	    std::unique_ptr<std::vector<SimVertex> > & simVertices);
+	
+	~ParticleManager();
+
+	std::unique_ptr<Particle> nextParticle(const RandomEngineAndDistribution & random);
+	
+	void addSecondaries(
+	    const math::XYZTLorentzVector & vertexPosition,
+	    int motherSimTrackId,
+	    std::vector<std::unique_ptr<Particle> > & secondaries);
+
+	std::unique_ptr<std::vector<SimTrack> > harvestSimTracks()
+	{
+	    return std::move(simTracks_);
+	}
+
+	std::unique_ptr<std::vector<SimVertex> > harvestSimVertices()
+	{
+	    return std::move(simVertices_);
+	}
+
+
+    private:
+
+	unsigned addSimVertex(
+	    const math::XYZTLorentzVector & position,
+	    int motherIndex);
+	
+	unsigned addSimTrack(const Particle * particle);
+
+	std::unique_ptr<Particle> nextGenParticle();
+
+	// data members
+	const HepMC::GenEvent * const genEvent_;
+	HepMC::GenEvent::particle_const_iterator genParticleIterator_;
+	const HepMC::GenEvent::particle_const_iterator genParticleEnd_;
+	int genParticleIndex_;
+	const HepPDT::ParticleDataTable * const particleDataTable_;
+	const double beamPipeRadius2_;
+	const double deltaRchargedMother_;
+	const ParticleFilter * const particleFilter_;
+	std::unique_ptr<std::vector<SimTrack> > simTracks_;
+	std::unique_ptr<std::vector<SimVertex> > simVertices_;
+	double momentumUnitConversionFactor_;
+	double lengthUnitConversionFactor_;
+	double lengthUnitConversionFactor2_;
+	double timeUnitConversionFactor_;
+	std::vector<std::unique_ptr<Particle> > particleBuffer_;
+    };
+}
+
+#endif
