@@ -179,6 +179,11 @@ void fastsim::ParticleManager::addSecondaries(
 
 }
 
+unsigned fastsim::ParticleManager::addEndVertex(const fastsim::Particle * particle)
+{
+    return this->addSimVertex(particle->position(), particle->simTrackIndex());
+}
+
 unsigned fastsim::ParticleManager::addSimVertex(
     const math::XYZTLorentzVector & position,
     int parentSimTrackIndex)

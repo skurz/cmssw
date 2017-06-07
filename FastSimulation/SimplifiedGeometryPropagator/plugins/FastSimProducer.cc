@@ -168,17 +168,21 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		    // perform interaction between layer and particle
 		    // do only if there is actual material
 		    if(layer->getThickness(particle->position(), particle->momentum()) > 1E-10){
+		    	int nSecondaries = 0;
 			    for(fastsim::InteractionModel * interactionModel : layer->getInteractionModels())
 			    {
 					LogDebug(MESSAGECATEGORY) << "   interact with " << *interactionModel;
 					std::vector<std::unique_ptr<fastsim::Particle> > secondaries;
 					interactionModel->interact(*particle,*layer,secondaries,*_randomEngine);
+					nSecondaries += secondaries.size();
 					particleManager.addSecondaries(particle->position(),particle->simTrackIndex(),secondaries);
 			    }
 
 			    // kinematic cuts
 			    if(!particleFilter_.acceptsEn(*particle))
 			    {	
+			    	// Add endvertex
+			    	if(nSecondaries==0) particleManager.addEndVertex(particle.get());
 			    	layer = 0;
 			    	break;
 			    }

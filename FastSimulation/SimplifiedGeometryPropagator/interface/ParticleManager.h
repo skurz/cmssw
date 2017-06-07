@@ -65,6 +65,8 @@ namespace fastsim {
 	    return std::move(simVertices_);
 	}
 
+	unsigned addEndVertex(const Particle * particle);
+
 
     private:
 
