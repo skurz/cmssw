@@ -341,6 +341,12 @@ void fastsim::NuclearInteractionFTF::interact(fastsim::Particle & particle, cons
     return;
     }
 
+    // particle lost all its enrgy in previous interaction
+    if (particle.momentum().E() < 1E-10)
+    {
+    return;
+    }
+
     double radLengths = layer.getThickness(particle.position(),particle.momentum());
     // TEC layers have some fudge factor for nuclear interactions
     radLengths *= layer.getNuclearInteractionThicknessFactor();
