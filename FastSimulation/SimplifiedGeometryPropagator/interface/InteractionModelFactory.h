@@ -12,6 +12,8 @@ namespace edm
 namespace fastsim
 {
     class InteractionModel;
+
+    //! Define a PluginFactory for all interaction models (provides a handy environment).
     typedef edmplugin::PluginFactory<fastsim::InteractionModel*(const std::string & name,const edm::ParameterSet&)> InteractionModelFactory;
 }
 

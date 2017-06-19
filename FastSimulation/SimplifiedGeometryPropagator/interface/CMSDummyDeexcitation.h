@@ -25,18 +25,17 @@ class G4Nucleus;
 
 namespace fastsim
 {
+	//! Needed as a dummy interface to Geant4 nuclear de-excitation module.
+	/*!
+  		No secondary produced.
+  	*/
 	class CMSDummyDeexcitation : public G4VPreCompoundModel
 	{ 
-	public:
-
-	  CMSDummyDeexcitation():G4VPreCompoundModel(0, "PRECO") {}; 
-
-	  virtual ~CMSDummyDeexcitation() {};
-
-	  G4HadFinalState* ApplyYourself(const G4HadProjectile&, G4Nucleus&) { return 0; } 
-
-	  G4ReactionProductVector* DeExcite(G4Fragment&) { return new G4ReactionProductVector(); };
-
+		public:
+		CMSDummyDeexcitation():G4VPreCompoundModel(0, "PRECO") {}; 
+		virtual ~CMSDummyDeexcitation() {};
+		G4HadFinalState* ApplyYourself(const G4HadProjectile&, G4Nucleus&) { return 0; } 
+		G4ReactionProductVector* DeExcite(G4Fragment&) { return new G4ReactionProductVector(); };
 	};
 }
 

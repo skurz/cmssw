@@ -60,15 +60,11 @@ double fastsim::StraightTrajectory::nextCrossingTimeC(const fastsim::BarrelSimpl
     return -1.;
 }
 
-// consider moving the actual particle
 void fastsim::StraightTrajectory::move(double deltaTimeC)
 {
-    // be careful with rounding errors:
-    // particle must be ON layer
     position_.SetXYZT(
-	position_.X() + momentum_.X()/momentum_.E()*deltaTimeC,
-	position_.Y() + momentum_.Y()/momentum_.E()*deltaTimeC,
-	position_.Z() + momentum_.Z()/momentum_.E()*deltaTimeC,
-	position_.T() + deltaTimeC / fastsim::Constants::speedOfLight
-	);
+    	position_.X() + momentum_.X()/momentum_.E()*deltaTimeC,
+    	position_.Y() + momentum_.Y()/momentum_.E()*deltaTimeC,
+    	position_.Z() + momentum_.Z()/momentum_.E()*deltaTimeC,
+    	position_.T() + deltaTimeC / fastsim::Constants::speedOfLight);
 }

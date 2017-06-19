@@ -27,7 +27,7 @@ fastsim::SimplifiedGeometryFactory::SimplifiedGeometryFactory(const GeometricSea
     barrelDetLayersMap_["TIB"] = &geometricSearchTracker_->tibLayers();
     barrelDetLayersMap_["TOB"] = &geometricSearchTracker_->tobLayers();
 
-    // naming convention for forwardd DetLayer lists
+    // naming convention for forward DetLayer lists
     forwardDetLayersMap_["negFPix"] = &geometricSearchTracker_->negPixelForwardLayers();
     forwardDetLayersMap_["posFPix"] = &geometricSearchTracker_->posPixelForwardLayers();
     forwardDetLayersMap_["negTID"] = &geometricSearchTracker_->negTidLayers();
@@ -47,7 +47,7 @@ std::unique_ptr<fastsim::ForwardSimplifiedGeometry> fastsim::SimplifiedGeometryF
 {
     if(layerType != NEGFWD && layerType != POSFWD)
     {
-	throw cms::Exception("fastsim::SimplifiedGeometry::createForwardLayer") << " called with forbidden layerType. Allowed layerTypes are NEGFWD and POSFWD";
+	   throw cms::Exception("fastsim::SimplifiedGeometry::createForwardLayer") << " called with forbidden layerType. Allowed layerTypes are NEGFWD and POSFWD";
     }
     std::unique_ptr<fastsim::SimplifiedGeometry> layer = createSimplifiedGeometry(layerType,cfg);
     return std::unique_ptr<fastsim::ForwardSimplifiedGeometry>(static_cast<fastsim::ForwardSimplifiedGeometry *>(layer.release()));
@@ -121,7 +121,7 @@ std::unique_ptr<fastsim::SimplifiedGeometry> fastsim::SimplifiedGeometryFactory:
     						      << (isForward ? "position" : "radius") << " for this " 
     						      << (isForward ? "forward" : "barrel") << " layer:\n"
     						      << cfgString;
-        }
+    }
     
     // -----------------------------
     // create the layers
@@ -130,11 +130,11 @@ std::unique_ptr<fastsim::SimplifiedGeometry> fastsim::SimplifiedGeometryFactory:
     std::unique_ptr<fastsim::SimplifiedGeometry> layer;
     if(isForward)
     {
-	layer.reset(new fastsim::ForwardSimplifiedGeometry(position));
+	   layer.reset(new fastsim::ForwardSimplifiedGeometry(position));
     }
     else
     {
-	layer.reset(new fastsim::BarrelSimplifiedGeometry(position));
+	   layer.reset(new fastsim::BarrelSimplifiedGeometry(position));
     }
     layer->detLayer_ = detLayer;
 
@@ -144,34 +144,34 @@ std::unique_ptr<fastsim::SimplifiedGeometry> fastsim::SimplifiedGeometryFactory:
 
     // Get limits
     const std::vector<double> & limits = cfg.getUntrackedParameter<std::vector<double> >("limits");
-    // ,and check order.
+    // and check order.
     for(unsigned index = 1;index < limits.size();index++)
     {
-	if(limits[index] < limits[index-1])
-	{
-	    std::string cfgString;
-	    cfg.allToString(cfgString);
-	    throw cms::Exception("fastsim::SimplifiedGeometryFactory") 
-		<< "limits must be provided in increasing order. error in:\n"
-		<< cfgString;
-	}
+    	if(limits[index] < limits[index-1])
+    	{
+    	    std::string cfgString;
+    	    cfg.allToString(cfgString);
+    	    throw cms::Exception("fastsim::SimplifiedGeometryFactory") 
+        		<< "limits must be provided in increasing order. error in:\n"
+        		<< cfgString;
+    	}
     }
     // Get thickness values
     const std::vector<double> & thickness = cfg.getUntrackedParameter<std::vector<double> >("thickness");
-    // , and check compatibility with limits
+    // and check compatibility with limits
     if(limits.size() < 2 || thickness.size() != limits.size() - 1)
     {
-	std::string cfgString;
-	cfg.allToString(cfgString);
-	throw cms::Exception("fastim::SimplifiedGeometryFactory") 
-	    << "layer thickness and limits not configured properly! error in:"
-	    << cfgString;
+    	std::string cfgString;
+    	cfg.allToString(cfgString);
+    	throw cms::Exception("fastim::SimplifiedGeometryFactory") 
+    	    << "layer thickness and limits not configured properly! error in:"
+    	    << cfgString;
     }
     // create the histogram
     layer->thicknessHist_.reset(new TH1F("h", "h", limits.size()-1, &limits[0]));
     layer->thicknessHist_->SetDirectory(0);
     for(unsigned i = 1; i < limits.size(); ++i){
-	layer->thicknessHist_->SetBinContent(i, thickness[i-1]);
+	   layer->thicknessHist_->SetBinContent(i, thickness[i-1]);
     }
     
     // -----------------------------
@@ -188,10 +188,10 @@ std::unique_ptr<fastsim::SimplifiedGeometry> fastsim::SimplifiedGeometryFactory:
     layer->magneticFieldHist_->SetDirectory(0);
     for(int i = 1; i <= 101; i++)
     {
-	GlobalPoint point = isForward ? 
-	    GlobalPoint(layer->magneticFieldHist_->GetXaxis()->GetBinCenter(i), 0.,position)
-	    : GlobalPoint(position, 0.,layer->magneticFieldHist_->GetXaxis()->GetBinCenter(i));
-	layer->magneticFieldHist_->SetBinContent(i, magneticField_->inTesla(point).z());
+    	GlobalPoint point = isForward ? 
+    	    GlobalPoint(layer->magneticFieldHist_->GetXaxis()->GetBinCenter(i), 0.,position)
+    	    : GlobalPoint(position, 0.,layer->magneticFieldHist_->GetXaxis()->GetBinCenter(i));
+    	layer->magneticFieldHist_->SetBinContent(i, magneticField_->inTesla(point).z());
     }
     
     // -----------------------------
@@ -221,46 +221,46 @@ fastsim::SimplifiedGeometryFactory::getDetLayer(const std::string & detLayerName
 {
     if(detLayerName.empty())
     {
-	return 0;
+	   return 0;
     }
 
     // obtain the index from the detLayerName
     unsigned pos = detLayerName.size();
     while(isdigit(detLayerName[pos-1]))
     {
-	pos -= 1;
+	   pos -= 1;
     }
     if(pos == detLayerName.size())
     {
-	throw cms::Exception("fastsim::SimplifiedGeometry::getDetLayer") << "last part of detLayerName must be index of DetLayer in list. Error in detLayerName" << detLayerName << std::endl;
+	   throw cms::Exception("fastsim::SimplifiedGeometry::getDetLayer") << "last part of detLayerName must be index of DetLayer in list. Error in detLayerName" << detLayerName << std::endl;
     }
     int index = atoi(detLayerName.substr(pos).c_str());
     std::string detLayerListName = detLayerName.substr(0,pos);
 
     try 
     {
-	// try to find the detLayer in the barrel map
-	if(barrelDetLayersMap_.find(detLayerListName) != barrelDetLayersMap_.end())
-	{
-	    auto detLayerList = barrelDetLayersMap_.find(detLayerListName)->second;
-	    return detLayerList->at(index-1); // use at, to provoce the trowing of an error in case of a bad index
-	}
-	
-	// try to find the detLayer in the forward map
-	else if(forwardDetLayersMap_.find(detLayerListName) != forwardDetLayersMap_.end())
-	{
-	    auto detLayerList = forwardDetLayersMap_.find(detLayerListName)->second;
-	    return detLayerList->at(index-1); // use at, to provoce the trowing of an error in case of a bad index
-	}
-	// throw an error
-	else
-	{
-	    throw cms::Exception("fastsim::SimplifiedGeometry::getDetLayer") << " could not find list of detLayers corresponding to detLayerName " << detLayerName << std::endl;
-	}
+    	// try to find the detLayer in the barrel map
+    	if(barrelDetLayersMap_.find(detLayerListName) != barrelDetLayersMap_.end())
+    	{
+    	    auto detLayerList = barrelDetLayersMap_.find(detLayerListName)->second;
+    	    return detLayerList->at(index-1); // use at, to provoce the throwing of an error in case of a bad index
+    	}
+    	
+    	// try to find the detLayer in the forward map
+    	else if(forwardDetLayersMap_.find(detLayerListName) != forwardDetLayersMap_.end())
+    	{
+    	    auto detLayerList = forwardDetLayersMap_.find(detLayerListName)->second;
+    	    return detLayerList->at(index-1); // use at, to provoce the throwing of an error in case of a bad index
+    	}
+    	// throw an error
+    	else
+    	{
+    	    throw cms::Exception("fastsim::SimplifiedGeometry::getDetLayer") << " could not find list of detLayers corresponding to detLayerName " << detLayerName << std::endl;
+    	}
     }
     catch (const std::out_of_range& error)
     {
-	throw cms::Exception("fastsim::SimplifiedGeometry::getDetLayer") << " index out of range for detLayerName: " << detLayerName << " " << error.what() << std::endl;
+	   throw cms::Exception("fastsim::SimplifiedGeometry::getDetLayer") << " index out of range for detLayerName: " << detLayerName << " " << error.what() << std::endl;
     }
 }
 

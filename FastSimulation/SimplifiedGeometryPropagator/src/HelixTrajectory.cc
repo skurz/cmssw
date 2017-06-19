@@ -102,7 +102,7 @@ double fastsim::HelixTrajectory::nextCrossingTimeC(const BarrelSimplifiedGeometr
         // case of no solution
         if(delta < 0)
         {   
-        	// Should not be reached: Full Propagation does always have a solution if(crosses(layer))
+        	// Should not be reached: Full Propagation does always have a solution "if(crosses(layer)) == -1"
             // Even if particle is outside all layers -> can turn around in magnetic field
             return -1.;
         }
@@ -127,7 +127,7 @@ double fastsim::HelixTrajectory::nextCrossingTimeC(const BarrelSimplifiedGeometr
             phi2 = - phi2 + M_PI;
         }
 
-
+        // another ambiguity
         if(phi1 < 0){
             phi1 += 2. * M_PI;
         }
@@ -135,17 +135,17 @@ double fastsim::HelixTrajectory::nextCrossingTimeC(const BarrelSimplifiedGeometr
             phi2 += 2. * M_PI;
         }
 
-        if(std::abs(layer.getRadius() - sqrt((centerX_ + radius_*std::cos(phi1))*(centerX_ + radius_*std::cos(phi1)) + (centerY_ + radius_*std::sin(phi1))*(centerY_ + radius_*std::sin(phi1)))) > 1.0e-2){
-            // Propagation not successful for numerical reasons. Do Taylor expansion!
-            doApproximation = true;
-        }
-        if(std::abs(layer.getRadius() - sqrt((centerX_ + radius_*std::cos(phi2))*(centerX_ + radius_*std::cos(phi2)) + (centerY_ + radius_*std::sin(phi2))*(centerY_ + radius_*std::sin(phi2)))) > 1.0e-2){
-            // Propagation not successful for numerical reasons. Do Taylor expansion!
+        // Check if propagation successful (numerical reasons): both solutions (phi1, phi2) have to be on the layer (same radius)
+        // Otherwise do Taylor expansion as fallback
+        if(std::abs(layer.getRadius() - sqrt((centerX_ + radius_*std::cos(phi1))*(centerX_ + radius_*std::cos(phi1)) + (centerY_ + radius_*std::sin(phi1))*(centerY_ + radius_*std::sin(phi1)))) > 1.0e-2 
+            || std::abs(layer.getRadius() - sqrt((centerX_ + radius_*std::cos(phi2))*(centerX_ + radius_*std::cos(phi2)) + (centerY_ + radius_*std::sin(phi2))*(centerY_ + radius_*std::sin(phi2)))) > 1.0e-2)
+        {
             doApproximation = true;
         }
 
+        // Propagation successful!
         if(!doApproximation){
-            // find the corresponding times
+            // find the corresponding times when the intersection occurs
             // make sure they are positive
             double t1 = (phi1 - phi_)/phiSpeed_;
             while(t1 < 0)
@@ -158,8 +158,14 @@ double fastsim::HelixTrajectory::nextCrossingTimeC(const BarrelSimplifiedGeometr
                t2 += 2*M_PI/std::abs(phiSpeed_);
             }
 
-            // if the particle is already on the layer,
-            // we need to make sure the 2nd solution is picked.
+            // if the particle is already on the layer, we need to make sure the 2nd solution is picked.
+            // happens if particle turns around in the magnetif field instead of hitting the next layer
+
+            // boundaries are set too loose (1e-2): cannot distinguish between both solutions
+            if(std::abs(phi1 - phi_)*radius_ < 1e-2 && std::abs(phi2 - phi_)*radius_ < 1e-2){
+                throw cms::Exception("fastsim::HelixTrajectory::nextCrossingTimeC") << "should not happen. boundaries too loose!";
+            }
+
             if(std::abs(phi1 - phi_)*radius_ < 1e-2){
                 return t2*fastsim::Constants::speedOfLight;
             }
@@ -167,14 +173,13 @@ double fastsim::HelixTrajectory::nextCrossingTimeC(const BarrelSimplifiedGeometr
                 return t1*fastsim::Constants::speedOfLight;
             }
 
-            if(std::abs(phi1 - phi_)*radius_ < 1e-2 && std::abs(phi2 - phi_)*radius_ < 1e-2){
-                throw cms::Exception("fastsim::HelixTrajectory::nextCrossingTimeC") << "should not happen. boundaries too loose!";
-            }
-
             return std::min(t1,t2)*fastsim::Constants::speedOfLight;
         }
-
     }
+
+    ////////////////
+    // Do Taylor approximation (either huge radius of trajectory or full helix was numerically not stable)
+    ////////////////
 
     // Use Taylor approximation for small deltaPhi: sin(deltaPhi)=deltaPhi, cos(deltaPhi)=1
     // x = x_c + R_H * cos(phi0 + deltaPhi)

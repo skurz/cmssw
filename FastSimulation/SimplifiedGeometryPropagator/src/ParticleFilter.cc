@@ -9,7 +9,7 @@ fastsim::ParticleFilter::ParticleFilter(const edm::ParameterSet & cfg)
     double chargedPtMin  = cfg.getParameter<double>("chargedPtMin");
     chargedPtMin2_  = chargedPtMin*chargedPtMin;
     
-    // Particles must have energy greater than EMin [GeV]
+    // (All) particles must have energy greater than EMin [GeV]
     EMin_   = cfg.getParameter<double>("EMin");
     
     // Allow *ALL* protons with energy > protonEMin
@@ -24,7 +24,7 @@ fastsim::ParticleFilter::ParticleFilter(const edm::ParameterSet & cfg)
     cos2ThetaMax_ = (vdt::fast_exp(2.*etaMax)-1.) / (vdt::fast_exp(2.*etaMax)+1.);
     cos2ThetaMax_ *= cos2ThetaMax_;
 
-    // Particles must have vertex inside the volume enclosed by ECAL
+    // Particles must have vertex inside the tracker
     vertexRMax2_ = 129.0*129.0; 
     vertexZMax_ = 317;
 }
@@ -45,7 +45,7 @@ bool fastsim::ParticleFilter::accepts(const fastsim::Particle & particle) const
     }
     
     // cut on eta if the origin vertex is close to the beam
-    else if( particle.position().Perp2() < 25. && particle.momentum().Pz()*particle.momentum().Pz()/particle.momentum().P2() > cos2ThetaMax_)
+    else if(particle.position().Perp2() < 25. && particle.momentum().Pz()*particle.momentum().Pz()/particle.momentum().P2() > cos2ThetaMax_)
     {
 	   return false;
     }
@@ -73,13 +73,13 @@ bool fastsim::ParticleFilter::acceptsEn(const fastsim::Particle & particle) cons
     }
     
     // cut on the energy
-    else if( particle.momentum().E() < EMin_)
+    else if(particle.momentum().E() < EMin_)
     {
         return false;
     }
     
     // cut on pt of charged particles
-    else if( particle.charge()!=0 && particle.momentum().Perp2()<chargedPtMin2_)
+    else if(particle.charge()!=0 && particle.momentum().Perp2()<chargedPtMin2_)
     {
         return false;
     }
@@ -90,5 +90,6 @@ bool fastsim::ParticleFilter::acceptsEn(const fastsim::Particle & particle) cons
 
 bool fastsim::ParticleFilter::acceptsVtx(const math::XYZTLorentzVector & originVertex) const
 {
+    // origin vertex is within the tracker volume
     return originVertex.Perp2() < vertexRMax2_ && fabs(originVertex.Z()) < vertexZMax_;
 }

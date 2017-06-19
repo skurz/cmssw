@@ -48,12 +48,12 @@ fastsim::ParticleManager::ParticleManager(
     // add the main vertex from the signal event to the simvertex collection
     if(genEvent.vertices_begin() != genEvent_->vertices_end())
     {
-	const HepMC::FourVector & position = (*genEvent.vertices_begin())->position();
-	addSimVertex(math::XYZTLorentzVector(position.x()*lengthUnitConversionFactor_,
-					     position.y()*lengthUnitConversionFactor_,
-					     position.z()*lengthUnitConversionFactor_,
-					     position.t()*timeUnitConversionFactor_)
-		     ,-1);
+    	const HepMC::FourVector & position = (*genEvent.vertices_begin())->position();
+    	addSimVertex(math::XYZTLorentzVector(position.x()*lengthUnitConversionFactor_,
+    					     position.y()*lengthUnitConversionFactor_,
+    					     position.z()*lengthUnitConversionFactor_,
+    					     position.t()*timeUnitConversionFactor_)
+                    ,-1);
     }
 }
 
@@ -81,7 +81,9 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextParticle(const 
     {
 	    return nextParticle(random);
     }
-    if(!particle->remainingProperLifeTimeIsSet() || !particle->chargeIsSet() )
+
+    // lifetime or charge of particle are not yet set
+    if(!particle->remainingProperLifeTimeIsSet() || !particle->chargeIsSet())
     {
     	// retrieve the particle data
     	const HepPDT::ParticleData * particleData = particleDataTable_->particle(HepPDT::ParticleID(particle->pdgId()));
@@ -98,11 +100,11 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextParticle(const 
             double width = particleData->totalWidth().value();
     	    if(width > 1.0e-35)
     	    {
-              particle->setRemainingProperLifeTimeC(-log(random.flatShoot())*6.582119e-25/width/10.); // ct in cm
+                particle->setRemainingProperLifeTimeC(-log(random.flatShoot())*6.582119e-25/width/10.); // ct in cm
     	    }
             else
     	    {
-              particle->setStable();
+                particle->setStable();
     	    }
     	}
 
@@ -152,6 +154,7 @@ void fastsim::ParticleManager::addSecondaries(
     	idx++;
         if(secondary->getMotherDeltaR() != -1){
             if(secondary->getMotherDeltaR() > deltaRchargedMother_){
+                // larger than max requirement on deltaR
                 secondary->resetMother();
             }else{
             	if(secondary->getMotherDeltaR() < distMin){
@@ -161,19 +164,22 @@ void fastsim::ParticleManager::addSecondaries(
             }            
         }
     }
-
+    
     // add secondaries to buffer
     idx = -1;
     for(auto & secondary : secondaries)
     {
     	idx++;
     	if(idxMin != -1){
+            // reset all but the particle with the lowest deltaR (which is at idxMin)
     		if(secondary->getMotherDeltaR() != -1 && idx != idxMin){
     			secondary->resetMother();
     		}
     	}
 
+        // set origin vertex
     	secondary->setSimVertexIndex(simVertexIndex);
+        // ...and add particle to buffer
     	particleBuffer_.push_back(std::move(secondary));
     }
 
@@ -199,11 +205,13 @@ unsigned fastsim::ParticleManager::addSimVertex(
 unsigned fastsim::ParticleManager::addSimTrack(const fastsim::Particle * particle)
 {
 	int simTrackIndex;
-	// Again: FastSim cheat tracking
+	// Again: FastSim cheat tracking -> continue track of mother
 	if(particle->getMotherDeltaR() != -1){
 		simTrackIndex = particle->getMotherSimTrackIndex();
 	}
-	else{
+    // or create new SimTrack
+	else
+    {
 		simTrackIndex = simTracks_->size();
     	simTracks_->emplace_back(particle->pdgId(),
                     particle->momentum(),
@@ -221,9 +229,9 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextGenParticle()
     // use hepmc units
     // make the link simtrack to simvertex
     // try not to change the simvertex structure
-    // print a couple of ttbar events to undertand the simtrack structure? nah...
     
-    for ( ; genParticleIterator_ != genParticleEnd_ ; ++genParticleIterator_,++genParticleIndex_ ) // loop over gen particles
+    // loop over gen particles
+    for ( ; genParticleIterator_ != genParticleEnd_ ; ++genParticleIterator_,++genParticleIndex_ ) 
     {
     	// some handy pointers and references
     	const HepMC::GenParticle & particle = **genParticleIterator_;
@@ -246,6 +254,7 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextGenParticle()
     	{
     	    continue;
     	}
+
     	// make the particle
     	std::unique_ptr<Particle> newParticle(
     	    new Particle(particle.pdg_id(),
@@ -267,9 +276,11 @@ std::unique_ptr<fastsim::Particle> fastsim::ParticleManager::nextGenParticle()
     	}
 
         // TODO: The products of a b-decay should point to that vertex and not to the primary vertex!
-        // Seems like this information has to be taken from the genEvent. How to do this? Is this really neccessary? 
+        // Seems like this information has to be taken from the genEvent. How to do this? Is this really neccessary?
+        // See FBaseSimEvent::fill(..)
         newParticle->setSimVertexIndex(0);
 
+        // iterator/index has to be increased in case of return (is not done by the loop then)
         ++genParticleIterator_; ++genParticleIndex_;
     	// and return
     	return std::move(newParticle);

@@ -7,10 +7,6 @@
 
 
 ///////////////////////////////////////////////
-// InteractionModel
-//
-// Description: Base class for any interaction models between a particle and a tracker layer
-//
 // Author: L. Vanelderen, S. Kurz
 // Date: 29 May 2017
 //////////////////////////////////////////////////////////
@@ -28,21 +24,49 @@ namespace fastsim
 {
     class SimplifiedGeometry;
     class Particle;
+
+    //! Base class for any interaction model between a particle and a tracker layer.
+    /*!
+        Every instance should have a distinct std::string name.
+    */
     class InteractionModel 
     {
-    public:
-	InteractionModel(std::string name)
-	    : name_(name){}
-	virtual ~InteractionModel(){;}
-	virtual void interact(Particle & particle,const SimplifiedGeometry & layer,std::vector<std::unique_ptr<Particle> > & secondaries,const RandomEngineAndDistribution & random) = 0;
-	virtual void registerProducts(edm::ProducerBase & producer) const{;}
-	virtual void storeProducts(edm::Event & iEvent) {;}
-	const std::string getName(){return name_;}
- 	friend std::ostream& operator << (std::ostream& o , const InteractionModel & model); 
-   private:
-	const std::string name_;
+        public:
+        //! Constructor.
+        /*!
+            \param name Enique name for every instance.
+        */
+    	InteractionModel(std::string name)
+    	    : name_(name){}
+
+        //! Default destructor.
+    	virtual ~InteractionModel(){;}
+
+        //! Perform the interaction.
+        /*!
+            \param particle The particle that interacts with the matter.
+            \param layer The detector layer that interacts with the particle.
+            \param secondaries Particles that are produced in the interaction (if any).
+            \param random The Random Engine.
+        */
+    	virtual void interact(Particle & particle, const SimplifiedGeometry & layer, std::vector<std::unique_ptr<Particle> > & secondaries, const RandomEngineAndDistribution & random) = 0;
+    	
+        //! In case interaction produces and stores content in the event (e.g. TrackerSimHits).
+        virtual void registerProducts(edm::ProducerBase & producer) const{;}
+
+        //! In case interaction produces and stores content in the event (e.g. TrackerSimHits).
+    	virtual void storeProducts(edm::Event & iEvent) {;}
+
+        //! Return (unique) name of this interaction.
+    	const std::string getName() {return name_;}
+
+        //! Basic information output.
+     	friend std::ostream& operator << (std::ostream& o, const InteractionModel & model); 
+        
+        private:
+    	const std::string name_;  //!< A unique name for every instance of any interaction.
     };
-    std::ostream& operator << (std::ostream& os , const InteractionModel & interactionModel);
+    std::ostream& operator << (std::ostream& os, const InteractionModel & interactionModel);
 
 }
 

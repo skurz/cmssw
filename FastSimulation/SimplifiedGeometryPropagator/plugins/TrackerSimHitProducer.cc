@@ -292,7 +292,7 @@ std::pair<double, PSimHit*> fastsim::TrackerSimHitProducer::createHitOnDetector(
 
     return std::pair<double, PSimHit*>((hitPos-refPos).mag(),
                                         new PSimHit(entry, exit, localMomentum.mag(), tof, eLoss, pdgId,
-                                				   detector.geographicalId().rawId(),simTrackId,
+                                				   detector.geographicalId().rawId(), simTrackId,
                                 				   localMomentum.theta(),
                                 				   localMomentum.phi()));
 }

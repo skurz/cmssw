@@ -39,24 +39,29 @@ fastsim::Decayer::decay(const Particle & particle,std::vector<std::unique_ptr<fa
     int pid = particle.pdgId();
     pythia_->event.reset();
     
+    // create a pythia particle which has the same properties as the FastSim particle
     Pythia8::Particle pythiaParticle( pid , 93, 0, 0, 0, 0, 0, 0,
 				      particle.momentum().X(),
 				      particle.momentum().Y(),
 				      particle.momentum().Z(),
 				      particle.momentum().E(),
 				      particle.momentum().M() );
-    pythiaParticle.vProd( particle.position().X(), particle.position().Y(), 
-			  particle.position().Z(), particle.position().T() );
-    pythia_->event.append( pythiaParticle );
+    pythiaParticle.vProd(particle.position().X(), particle.position().Y(), particle.position().Z(), particle.position().T());
+    pythia_->event.append(pythiaParticle);
 
     int nentries_before = pythia_->event.size();
-    pythia_->particleData.mayDecay(pid,true);   // switch on the decay of this and only this particle (avoid double decays)
-    pythia_->next();                            // do the decay
-    pythia_->particleData.mayDecay(pid,false);  // switch it off again
+    // switch on the decay of this and only this particle (avoid double decays)
+    pythia_->particleData.mayDecay(pid,true);   
+    // do the decay
+    pythia_->next();
+    // switch it off again                            
+    pythia_->particleData.mayDecay(pid,false);  
     int nentries_after = pythia_->event.size();
-    if ( nentries_after <= nentries_before ) return;
 
-    for ( int ipart=nentries_before; ipart<nentries_after; ipart++ ) 
+    if(nentries_after <= nentries_before)return;
+
+    // add decay products back to the event
+    for(int ipart=nentries_before; ipart<nentries_after; ipart++) 
     {
     	Pythia8::Particle& daughter = pythia_->event[ipart];
         
@@ -64,6 +69,7 @@ fastsim::Decayer::decay(const Particle & particle,std::vector<std::unique_ptr<fa
     						       ,math::XYZTLorentzVector(daughter.xProd(),daughter.yProd(),daughter.zProd(),daughter.tProd())
     						       ,math::XYZTLorentzVector(daughter.px(), daughter.py(), daughter.pz(), daughter.e())));
 
+        // daughter can inherit the SimTrackIndex of mother (if both charged): necessary for FastSim (cheat) tracking
         if(particle.charge() != 0 && std::abs(particle.charge()-daughter.charge()) < 1E-10){
             secondaries.back()->setMotherDeltaR(particle.momentum());
             secondaries.back()->setMotherPdgId(particle.getMotherDeltaR() == -1 ? particle.pdgId() : particle.getMotherPdgId());

@@ -6,7 +6,7 @@ std::ostream& fastsim::operator << (std::ostream& os , const SimplifiedGeometry 
 {
     os << (layer.isForward() ? "ForwardSimplifiedGeometry" : "BarrelSimplifiedGeometry")
        << " index=" << layer.index_
-       << (layer.isForward() ? " z=" : " radius=") << layer.position_;
+       << (layer.isForward() ? " z=" : " radius=") << layer.geomProperty_;
     return os;
 }
 
@@ -16,9 +16,8 @@ std::ostream& fastsim::operator << (std::ostream& os , const SimplifiedGeometry 
 fastsim::SimplifiedGeometry::~SimplifiedGeometry()
 {}
 
-fastsim::SimplifiedGeometry::SimplifiedGeometry(double position)
-    : position_(position)
-    , position2_(position_*position_)
+fastsim::SimplifiedGeometry::SimplifiedGeometry(double geomProperty)
+    : geomProperty_(geomProperty)
     , index_(-1)
     , detLayer_(0)
     , nuclearInteractionThicknessFactor_(1.)

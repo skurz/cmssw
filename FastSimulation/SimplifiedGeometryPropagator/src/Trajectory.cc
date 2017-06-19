@@ -14,10 +14,9 @@ fastsim::Trajectory::Trajectory(const fastsim::Particle & particle)
     momentum_ = particle.momentum();
 }
 
-std::unique_ptr<fastsim::Trajectory> fastsim::Trajectory::createTrajectory(const fastsim::Particle & particle,double magneticFieldZ)
+std::unique_ptr<fastsim::Trajectory> fastsim::Trajectory::createTrajectory(const fastsim::Particle & particle, double magneticFieldZ)
 {
-    if(particle.charge() == 0. || magneticFieldZ == 0.)
-    {
+    if(particle.charge() == 0. || magneticFieldZ == 0.){
 	   LogDebug("FastSim") << "create straight trajectory";
 	   return std::unique_ptr<fastsim::Trajectory>(new fastsim::StraightTrajectory(particle));
     }
@@ -25,10 +24,9 @@ std::unique_ptr<fastsim::Trajectory> fastsim::Trajectory::createTrajectory(const
        LogDebug("FastSim") << "create straight trajectory (huge radius)";
        return std::unique_ptr<fastsim::Trajectory>(new fastsim::StraightTrajectory(particle));
     }
-    else
-    {
+    else{
 	   LogDebug("FastSim") << "create helix trajectory";
-	   return std::unique_ptr<fastsim::Trajectory>(new fastsim::HelixTrajectory(particle,magneticFieldZ));
+	   return std::unique_ptr<fastsim::Trajectory>(new fastsim::HelixTrajectory(particle, magneticFieldZ));
     }
 }
 
@@ -37,11 +35,11 @@ double fastsim::Trajectory::nextCrossingTimeC(const fastsim::SimplifiedGeometry 
 {
     if(layer.isForward())
     {
-	return this->nextCrossingTimeC(static_cast<const fastsim::ForwardSimplifiedGeometry &>(layer));
+	   return this->nextCrossingTimeC(static_cast<const fastsim::ForwardSimplifiedGeometry &>(layer));
     }
     else
     {
-	return this->nextCrossingTimeC(static_cast<const fastsim::BarrelSimplifiedGeometry &>(layer));
+	   return this->nextCrossingTimeC(static_cast<const fastsim::BarrelSimplifiedGeometry &>(layer));
     }
 }
 
