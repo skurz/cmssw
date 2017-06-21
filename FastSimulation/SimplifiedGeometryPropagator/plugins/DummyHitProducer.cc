@@ -14,13 +14,17 @@
 
 namespace fastsim
 {
+    //! Dummy class: creates necessary collections for Muon/ECAL/HCAL hits.
+    /*!
+        Used for code development, will be deleted as soon as calorimetry and muon chambers in place.
+    */
     class DummyHitProducer : public InteractionModel
     {
-    public:
-	DummyHitProducer(const std::string & name,const edm::ParameterSet & cfg);
-	void interact(Particle & particle,const SimplifiedGeometry & layer,std::vector<std::unique_ptr<Particle> > & secondaries,const RandomEngineAndDistribution & random) override;
-	void registerProducts(edm::ProducerBase & producer) const override;
-	void storeProducts(edm::Event & iEvent) override;
+        public:
+    	DummyHitProducer(const std::string & name,const edm::ParameterSet & cfg);
+    	void interact(Particle & particle,const SimplifiedGeometry & layer,std::vector<std::unique_ptr<Particle> > & secondaries,const RandomEngineAndDistribution & random) override;
+    	void registerProducts(edm::ProducerBase & producer) const override;
+    	void storeProducts(edm::Event & iEvent) override;
     };
 }
 

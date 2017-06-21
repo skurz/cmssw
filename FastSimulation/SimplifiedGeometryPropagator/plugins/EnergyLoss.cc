@@ -14,10 +14,6 @@
 
 
 ///////////////////////////////////////////////
-// EnergyLoss
-//
-// Description: Implementation of most probable energy loss by ionization in the tracker layers.
-//
 // Author: Patrick Janot
 // Date: 8-Jan-2004
 //
@@ -29,18 +25,38 @@
 
 namespace fastsim
 {
+    //! Implementation of most probable energy loss by ionization in the tracker layers.
+    /*!
+        Computes the most probable energy loss by ionization from a charged particle in the tracker layer,
+        smears it with Landau fluctuations and returns the particle with modified energy.
+        The deposited energy is assigned with a produced SimHit (if active material hit).
+        \sa TrackerSimHitProducer
+    */
     class EnergyLoss : public InteractionModel
     {
-    public:
-    EnergyLoss(const std::string & name,const edm::ParameterSet & cfg);
-    ~EnergyLoss(){;};
-    void interact(fastsim::Particle & particle, const SimplifiedGeometry & layer,std::vector<std::unique_ptr<fastsim::Particle> > & secondaries,const RandomEngineAndDistribution & random);
-    private:
-    LandauFluctuationGenerator theGenerator;
-    double minMomentum_;
-    double density_;
-    double radLenInCm_;
-    double A_, Z_;
+        public:
+        //! Constructor.
+        EnergyLoss(const std::string & name,const edm::ParameterSet & cfg);
+
+        //! Default destructor.
+        ~EnergyLoss(){;};
+
+        //! Perform the interaction.
+        /*!
+            \param particle The particle that interacts with the matter.
+            \param layer The detector layer that interacts with the particle.
+            \param secondaries Particles that are produced in the interaction (if any).
+            \param random The Random Engine.
+        */
+        void interact(fastsim::Particle & particle, const SimplifiedGeometry & layer, std::vector<std::unique_ptr<fastsim::Particle> > & secondaries, const RandomEngineAndDistribution & random);
+        
+        private:
+        LandauFluctuationGenerator theGenerator;  //!< Generator to do Landau fluctuation
+        double minMomentum_;  //!< Minimum momentum of incoming (charged) particle
+        double density_;  //!< Density of material (usually silicon rho=2.329)
+        double radLenInCm_;  //!< Radiation length of material (usually silicon X0=9.360)
+        double A_;  //!< Atomic weight of material (usually silicon A=28.0855)
+        double Z_;  //!< Atomic number of material (usually silicon Z=14)
     };
 }
 
@@ -49,6 +65,7 @@ fastsim::EnergyLoss::EnergyLoss(const std::string & name,const edm::ParameterSet
 {
     // Set the minimal momentum
     minMomentum_ = cfg.getParameter<double>("minMomentumCut");
+    // Material properties
     A_ = cfg.getParameter<double>("A");
     Z_ = cfg.getParameter<double>("Z");
     density_ = cfg.getParameter<double>("density");
@@ -57,7 +74,7 @@ fastsim::EnergyLoss::EnergyLoss(const std::string & name,const edm::ParameterSet
 
 void fastsim::EnergyLoss::interact(fastsim::Particle & particle, const SimplifiedGeometry & layer,std::vector<std::unique_ptr<fastsim::Particle> > & secondaries,const RandomEngineAndDistribution & random)
 {
-    // the energy deposit in the layer
+    // Reset the energy deposit in the layer
     particle.setEnergyDeposit(0);
 
     //
@@ -81,12 +98,12 @@ void fastsim::EnergyLoss::interact(fastsim::Particle & particle, const Simplifie
     // minimum momentum
     //
     double p2  = particle.momentum().Vect().Mag2();
-    if (p2 < minMomentum_ * minMomentum_) {
+    if(p2 < minMomentum_ * minMomentum_){
         return;
     }
 
-    ///Mean excitation energy (in GeV)
-    double excitE = 12.5E-9*Z_;
+    // Mean excitation energy (in GeV)
+    double excitE = 12.5E-9 * Z_;
     
     // The thickness in cm
     double thick = radLengths * radLenInCm_;
@@ -96,41 +113,47 @@ void fastsim::EnergyLoss::interact(fastsim::Particle & particle, const Simplifie
     // Author : Patrick Janot - 8-Jan-2004
 
     double m2  = particle.momentum().mass() * particle.momentum().mass();
-    double e2  = p2+m2;
+    double e2  = p2 + m2;
 
-    double beta2 = p2/e2;
-    double gama2 = e2/m2;
+    double beta2 = p2 / e2;
+    double gama2 = e2 / m2;
 
     double charge2 = particle.charge() * particle.charge();
 
     // Energy loss spread in GeV
-    double eSpread  = 0.1536E-3*charge2*(Z_/A_)*density_*thick/beta2;
+    double eSpread  = 0.1536E-3 * charge2 * (Z_ / A_) * density_ * thick / beta2;
 
     // Most probable energy loss (from the integrated Bethe-Bloch equation)
-    double mostProbableLoss = eSpread * ( log ( 2.*fastsim::Constants::eMass*beta2*gama2*eSpread
-                             / (excitE*excitE) )
-                                 - beta2 + 0.200 );
+    double mostProbableLoss = eSpread * (
+                            log(2. * fastsim::Constants::eMass * beta2 * gama2 * eSpread / (excitE*excitE))
+                            - beta2 + 0.200);
 
     // Generate the energy loss with Landau fluctuations
     double dedx = mostProbableLoss + eSpread * theGenerator.landau(&random);
 
     // Compute the new energy and momentum
     double newE = particle.momentum().e() - dedx;
+
+    // Particle is stopped
     if(newE < particle.momentum().mass()){
         particle.momentum().SetXYZT(0.,0.,0.,0.);
-        // Energy deposit in detector
+        // The energy is deposited in the detector
+        // Assigned with SimHit (if active layer) -> see TrackerSimHitProducer
         particle.setEnergyDeposit(particle.momentum().e() - particle.momentum().mass());
         return;
     }
-    double fac  = std::sqrt((newE*newE-m2)/p2);    
 
-    // Energy deposit in detector
+    // Relative change in momentum
+    double fac  = std::sqrt((newE * newE - m2) / p2);    
+
+    // The energy is deposited in the detector
+    // Assigned with SimHit (if active layer) -> see TrackerSimHitProducer
     particle.setEnergyDeposit(dedx);
 
     // Update the momentum
-    particle.momentum().SetXYZT(particle.momentum().Px()*fac,
-        particle.momentum().Py()*fac,
-        particle.momentum().Pz()*fac,
+    particle.momentum().SetXYZT(particle.momentum().Px() * fac,
+        particle.momentum().Py() * fac,
+        particle.momentum().Pz() * fac,
         newE);
 }	
 

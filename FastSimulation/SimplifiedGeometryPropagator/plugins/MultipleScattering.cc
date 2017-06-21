@@ -17,10 +17,6 @@
 
 
 ///////////////////////////////////////////////
-// MultipleScattering
-//
-// Description: Implementation of multiple scattering in the tracker layers (assumes constant properties of material).
-//
 // Author: Patrick Janot
 // Date: 8-Jan-2004
 //
@@ -34,16 +30,34 @@ typedef math::XYZVector XYZVector;
 
 namespace fastsim
 {
+    //! Implementation of multiple scattering in the tracker layers.
+    /*!
+        Computes the direction change by multiple scattering of a charged particle (assumes constant properties of material).
+    */
     class MultipleScattering : public InteractionModel
     {
-    public:
-	MultipleScattering(const std::string & name,const edm::ParameterSet & cfg);
-    ~MultipleScattering(){;};
-	void interact(Particle & particle,const SimplifiedGeometry & layer,std::vector<std::unique_ptr<Particle> > & secondaries,const RandomEngineAndDistribution & random);
-    private:
-    XYZVector orthogonal(const XYZVector& aVector) const;
-	double minPt_;
-    double radLenInCm_;
+        public:
+        //! Constructor.
+    	MultipleScattering(const std::string & name,const edm::ParameterSet & cfg);
+
+        //! Default destructor.
+        ~MultipleScattering(){;};
+
+        //! Perform the interaction.
+        /*!
+            \param particle The particle that interacts with the matter.
+            \param layer The detector layer that interacts with the particle.
+            \param secondaries Particles that are produced in the interaction (if any).
+            \param random The Random Engine.
+        */
+    	void interact(Particle & particle,const SimplifiedGeometry & layer, std::vector<std::unique_ptr<Particle> > & secondaries, const RandomEngineAndDistribution & random);
+        
+        private:
+        //! Return an orthogonal vector.
+        XYZVector orthogonal(const XYZVector& aVector) const;
+
+    	double minPt_; //!< Cut on minimum pT of particle
+        double radLenInCm_; //!< Radiation length of material (usually silicon X0=9.360)
     };
 }
 
@@ -52,11 +66,12 @@ fastsim::MultipleScattering::MultipleScattering(const std::string & name,const e
 {
     // Set the minimal pT for interaction
     minPt_ = cfg.getParameter<double>("minPt");
+    // Material properties
     radLenInCm_ = cfg.getParameter<double>("radLen");
 }
 
 
-void fastsim::MultipleScattering::interact(fastsim::Particle & particle, const SimplifiedGeometry & layer,std::vector<std::unique_ptr<fastsim::Particle> > & secondaries,const RandomEngineAndDistribution & random)
+void fastsim::MultipleScattering::interact(fastsim::Particle & particle, const SimplifiedGeometry & layer, std::vector<std::unique_ptr<fastsim::Particle> > & secondaries, const RandomEngineAndDistribution & random)
 {
     //
     // only charged particles
@@ -85,13 +100,14 @@ void fastsim::MultipleScattering::interact(fastsim::Particle & particle, const S
     double m2 = particle.momentum().mass()*particle.momentum().mass();
     double e = std::sqrt(p2+m2);
 
-    double pbeta = p2/e;  // This is p*beta
+    // This is p*beta
+    double pbeta = p2 / e;  
 
     // Average multiple scattering angle from Moliere radius
     // The sqrt(2) factor is because of the *space* angle
     double theta0 = 0.0136 / pbeta * particle.charge() 
-                                 * std::sqrt(2.*radLengths) 
-                                 * (1. + 0.038*std::log(radLengths));
+                        * std::sqrt(2. * radLengths) 
+                        * (1. + 0.038 * std::log(radLengths));
 
     // Generate multiple scattering space angle perpendicular to the particle motion
     double theta = random.gaussShoot(0.,theta0); 
@@ -99,8 +115,8 @@ void fastsim::MultipleScattering::interact(fastsim::Particle & particle, const S
     double phi = 2. * M_PI * random.flatShoot();
 
     // The two rotations
-    ROOT::Math::AxisAngle rotation1(orthogonal(particle.momentum().Vect()),theta);
-    ROOT::Math::AxisAngle rotation2(particle.momentum().Vect(),phi);
+    ROOT::Math::AxisAngle rotation1(orthogonal(particle.momentum().Vect()), theta);
+    ROOT::Math::AxisAngle rotation2(particle.momentum().Vect(), phi);
     // Rotate!
     XYZVector rotated = rotation2((rotation1(particle.momentum().Vect())));
     particle.momentum().SetXYZT(rotated.X(),
@@ -111,10 +127,10 @@ void fastsim::MultipleScattering::interact(fastsim::Particle & particle, const S
     // Generate mutiple scattering displacements in cm (assuming the detectors
     // are silicon only to determine the thickness) in the directions orthogonal
     // to the vector normal to the surface
-    double xp = (cos(phi)*theta/2. + random.gaussShoot(0.,theta0)/sqrt(12.))
-              * radLengths * radLenInCm_;       
-    double yp = (sin(phi)*theta/2. + random.gaussShoot(0.,theta0)/sqrt(12.))
-              * radLengths * radLenInCm_;
+    double xp = (cos(phi) * theta / 2. + random.gaussShoot(0., theta0) / sqrt(12.))
+                    * radLengths * radLenInCm_;       
+    double yp = (sin(phi) * theta / 2. + random.gaussShoot(0., theta0) / sqrt(12.))
+                    * radLengths * radLenInCm_;
 
     // Determine a unitary vector tangent to the surface
     XYZVector normal;
@@ -150,7 +166,6 @@ void fastsim::MultipleScattering::interact(fastsim::Particle & particle, const S
     if(!layer.isOnSurface(particle.position())){
         throw cms::Exception("fastsim::MultipleScattering") << "particle no longer on layer's surface";
     }
-
 }
 
 XYZVector 
@@ -160,14 +175,14 @@ fastsim::MultipleScattering::orthogonal(const XYZVector& aVector) const
     double y = fabs(aVector.Y());
     double z = fabs(aVector.Z());
 
-    if ( x < y ) 
-    return x < z ? 
-      XYZVector(0.,aVector.Z(),-aVector.Y()) :
-      XYZVector(aVector.Y(),-aVector.X(),0.);
+    if(x < y) 
+        return x < z ? 
+            XYZVector(0.,aVector.Z(),-aVector.Y()) :
+            XYZVector(aVector.Y(),-aVector.X(),0.);
     else
-    return y < z ? 
-      XYZVector(-aVector.Z(),0.,aVector.X()) :
-      XYZVector(aVector.Y(),-aVector.X(),0.);
+        return y < z ? 
+            XYZVector(-aVector.Z(),0.,aVector.X()) :
+            XYZVector(aVector.Y(),-aVector.X(),0.);
 }
 
 

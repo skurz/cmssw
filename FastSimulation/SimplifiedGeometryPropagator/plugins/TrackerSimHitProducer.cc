@@ -37,10 +37,6 @@
 
 
 ///////////////////////////////////////////////
-// TrackerSimHitProducer
-//
-// Description: Produces SimHits in the tracker layers.
-//
 // Author: L. Vanelderen, S. Kurz
 // Date: 29 May 2017
 //////////////////////////////////////////////////////////
@@ -50,20 +46,54 @@ typedef std::pair<const GeomDet*,TrajectoryStateOnSurface> DetWithState;
 
 namespace fastsim
 {
+    //! Produces SimHits in the tracker layers.
+    /*!
+        Also assigns the energy loss of the particle (ionization) with the SimHit.
+        Furthermore, SimHits from different SubModules have to be sorted by their occurance!
+        \sa EnergyLoss
+    */
     class TrackerSimHitProducer : public InteractionModel
     {
-    public:
-	TrackerSimHitProducer(const std::string & name,const edm::ParameterSet & cfg);
-	~TrackerSimHitProducer(){;}
-	void interact(Particle & particle,const SimplifiedGeometry & layer,std::vector<std::unique_ptr<Particle> > & secondaries,const RandomEngineAndDistribution & random) override;
-	virtual void registerProducts(edm::ProducerBase & producer) const override;
-	virtual void storeProducts(edm::Event & iEvent) override;
-	std::pair<double, PSimHit*> createHitOnDetector(const TrajectoryStateOnSurface & particle, int pdgId, double layerThickness, double eLoss, int simTrackId, const GeomDet & detector, GlobalPoint & refPos);
-    private:
-    const double onSurfaceTolerance_;
-	std::unique_ptr<edm::PSimHitContainer> simHitContainer_;
-    double minMomentum_;
-    bool doHitsFromInboundParticles_;
+        public:
+        //! Constructor.
+    	TrackerSimHitProducer(const std::string & name,const edm::ParameterSet & cfg);
+
+        //! Default destructor.
+    	~TrackerSimHitProducer(){;}
+
+        //! Perform the interaction.
+        /*!
+            \param particle The particle that interacts with the matter.
+            \param layer The detector layer that interacts with the particle.
+            \param secondaries Particles that are produced in the interaction (if any).
+            \param random The Random Engine.
+        */
+    	void interact(Particle & particle,const SimplifiedGeometry & layer,std::vector<std::unique_ptr<Particle> > & secondaries,const RandomEngineAndDistribution & random) override;
+    	
+        //! Register the SimHit collection.
+        virtual void registerProducts(edm::ProducerBase & producer) const override;
+
+        //! Store the SimHit collection.
+    	virtual void storeProducts(edm::Event & iEvent) override;
+
+        //! Helper funtion to create the actual SimHit on a detector (sub-) module.
+        /*!
+            \param particle Representation of the particle's trajectory
+            \param pdgId The pdgId of the particle
+            \param layerThickness The thickness of the layer (in radLengths)
+            \param eLoss The energy that particle deposited in the detector (lost via ionisation)
+            \param simTrackId The SimTrack this hit should be assigned to
+            \param detector The detector element that is hit
+            \param refPos Reference position that is used to sort the hits if layer consists of sub-detectors
+            \ return Returns the SimHit and the distance relative to refPos since hits have to be ordered (in time) afterwards.
+        */
+    	std::pair<double, PSimHit*> createHitOnDetector(const TrajectoryStateOnSurface & particle, int pdgId, double layerThickness, double eLoss, int simTrackId, const GeomDet & detector, GlobalPoint & refPos);
+        
+        private:
+        const double onSurfaceTolerance_;  //!< Max distance between particle and active (sub-) module. Otherwise particle has to be propagated.
+    	std::unique_ptr<edm::PSimHitContainer> simHitContainer_;  //!< The SimHit.
+        double minMomentum_;  //!< Set the minimal momentum of incoming particle
+        bool doHitsFromInboundParticles_;  //!< If not set, incoming particles (negative speed relative to center of detector) don't create a SimHits since reconstruction anyways not possible
     };
 }
 
@@ -78,7 +108,7 @@ fastsim::TrackerSimHitProducer::TrackerSimHitProducer(const std::string & name,c
     minMomentum_ = cfg.getParameter<double>("minMomentumCut");
     // - if not set, particles from outside the beampipe with a negative speed in R direction are propagated but no SimHits
     // - particle with positive (negative) z and negative (positive) speed in z direction: no SimHits
-    // - this is not neccesary since a track reconstruction is not possible in this case anyways
+    // -> this is not neccesary since a track reconstruction is not possible in this case anyways
     doHitsFromInboundParticles_ = cfg.getParameter<bool>("doHitsFromInboundParticles");
 }
 
@@ -148,18 +178,14 @@ void fastsim::TrackerSimHitProducer::interact(Particle & particle,const Simplifi
     return;
     }
 
-    //
     // create the trajectory of the particle
-    //
     UniformMagneticField magneticField(layer.getMagneticFieldZ(particle.position())); 
     GlobalPoint  position( particle.position().X(), particle.position().Y(), particle.position().Z());
     GlobalVector momentum( particle.momentum().Px(), particle.momentum().Py(), particle.momentum().Pz());
     auto plane = layer.getDetLayer()->surface().tangentPlane(position);
     TrajectoryStateOnSurface trajectory(GlobalTrajectoryParameters( position, momentum, TrackCharge( particle.charge()), &magneticField), *plane);
     
-    //
     // find detectors compatible with the particle's trajectory
-    //
     AnalyticalPropagator propagator(&magneticField, anyDirection);
     InsideBoundsMeasurementEstimator est;
     std::vector<DetWithState> compatibleDetectors = layer.getDetLayer()->compatibleDets(trajectory, propagator, est);
@@ -168,12 +194,10 @@ void fastsim::TrackerSimHitProducer::interact(Particle & particle,const Simplifi
     // You have to sort the simHits in the order they occur!
     ////////
 
-    // The old algorithm (sorting by distance to IP) doesn't seem to make sense to me (what if particle moves inwards??)
+    // The old algorithm (sorting by distance to IP) doesn't seem to make sense to me (what if particle moves inwards?)
 
     // Detector layers have to be sorted by proximity to particle.position
-    // Doesn't always work! Particle could be already have been propagated in between the layers!
-    // Proximity to previous hit also doesn't work since simHits only store the localPosition
-    // Propagate particle backwards a bit to make sure it's outside any components (straight line should work well enough) 
+    // Propagate particle backwards a bit to make sure it's outside any components
     std::map<double, PSimHit*> distAndHits;
     // Position relative to which the hits should be sorted
     GlobalPoint positionOutside(particle.position().x()-particle.momentum().x()/particle.momentum().P()*10.,
@@ -183,30 +207,29 @@ void fastsim::TrackerSimHitProducer::interact(Particle & particle,const Simplifi
     // FastSim: cheat tracking -> assign hits to closest charged daughter if particle decays
     int pdgId = particle.getMotherDeltaR() == -1 ? particle.pdgId() : particle.getMotherPdgId();
 
-    //
     // loop over the compatible detectors
-    //
     for (const auto & detectorWithState : compatibleDetectors)
     {
     	const GeomDet & detector = *detectorWithState.first;
     	const TrajectoryStateOnSurface & particleState = detectorWithState.second;
+
     	// if the detector has no components
     	if(detector.isLeaf())
     	{
-    	    std::pair<double, PSimHit*> hitPair = createHitOnDetector(particleState,pdgId,layer.getThickness(particle.position()),energyDeposit,particle.simTrackIndex(),detector,positionOutside);
+    	    std::pair<double, PSimHit*> hitPair = createHitOnDetector(particleState, pdgId, layer.getThickness(particle.position()), energyDeposit, particle.simTrackIndex(), detector, positionOutside);
     	    if(hitPair.second){
     		  	distAndHits.insert(distAndHits.end(), hitPair);
-    		  }
+    		}
     	}
     	else
     	{
     	    // if the detector has components
     	    for(const auto component : detector.components())
     	    {
-    		  std::pair<double, PSimHit*> hitPair = createHitOnDetector(particleState,pdgId,layer.getThickness(particle.position()),energyDeposit,particle.simTrackIndex(),*component,positionOutside);    		  
-    		  if(hitPair.second){
-    		  	distAndHits.insert(distAndHits.end(), hitPair);
-    		  }
+                std::pair<double, PSimHit*> hitPair = createHitOnDetector(particleState, pdgId,layer.getThickness(particle.position()), energyDeposit, particle.simTrackIndex(), *component, positionOutside);    		  
+                if(hitPair.second){
+                	distAndHits.insert(distAndHits.end(), hitPair);
+                }
     	    }
     	}
     }
@@ -221,13 +244,12 @@ void fastsim::TrackerSimHitProducer::interact(Particle & particle,const Simplifi
 // Also returns distance to simHit since hits have to be ordered (in time) afterwards. Necessary to do explicit copy of TrajectoryStateOnSurface particle (not call by reference)
 std::pair<double, PSimHit*> fastsim::TrackerSimHitProducer::createHitOnDetector(const TrajectoryStateOnSurface & particle, int pdgId, double layerThickness, double eLoss, int simTrackId, const GeomDet & detector, GlobalPoint & refPos)
 {
-    //
     // determine position and momentum of particle in the coordinate system of the detector
-    //
     LocalPoint localPosition;
     LocalVector localMomentum;
+
     // if the particle is close enough, no further propagation is needed
-    if ( fabs( detector.toLocal(particle.globalPosition()).z()) < onSurfaceTolerance_) 
+    if(fabs(detector.toLocal(particle.globalPosition()).z()) < onSurfaceTolerance_) 
     {
 	   localPosition = particle.localPosition();
 	   localMomentum = particle.localMomentum();
@@ -255,39 +277,33 @@ std::pair<double, PSimHit*> fastsim::TrackerSimHitProducer::createHitOnDetector(
     	}
     }
 
-    // 
     // find entry and exit point of particle in detector
-    //
     const Plane& detectorPlane = detector.surface();
-    double halfThick = 0.5*detectorPlane.bounds().thickness();
+    double halfThick = 0.5 * detectorPlane.bounds().thickness();
     double pZ = localMomentum.z();
-    LocalPoint entry = localPosition + (-halfThick/pZ) * localMomentum;
-    LocalPoint exit = localPosition + halfThick/pZ * localMomentum;
+    LocalPoint entry = localPosition + (-halfThick / pZ) * localMomentum;
+    LocalPoint exit = localPosition + (halfThick / pZ) * localMomentum;
     double tof = particle.globalPosition().mag() / fastsim::Constants::speedOfLight ; // in nanoseconds
     
-    //
     // make sure the simhit is physically on the module
-    //
-    double boundX = detectorPlane.bounds().width()/2.;
-    double boundY = detectorPlane.bounds().length()/2.;
+    double boundX = detectorPlane.bounds().width() / 2.;
+    double boundY = detectorPlane.bounds().length() / 2.;
     // Special treatment for TID and TEC trapeziodal modules
     unsigned subdet = DetId(detector.geographicalId()).subdetId(); 
-    if ( subdet == 4 || subdet == 6 ) 
-	boundX *=  1. - localPosition.y()/detectorPlane.position().perp();
+    if (subdet == 4 || subdet == 6) 
+	boundX *=  1. - localPosition.y() / detectorPlane.position().perp();
     if(fabs(localPosition.x()) > boundX  || fabs(localPosition.y()) > boundY )
     {
 	   return std::pair<double, PSimHit*>(0, 0);
     }
 
-    //
-    // create the hit
-    //
-    // The energy loss rescaled to the module thickness
+    // Create the hit: the energy loss rescaled to the module thickness
     // Total thickness is in radiation lengths, 1 radlen = 9.36 cm
     // Sensitive module thickness is about 30 microns larger than 
     // the module thickness itself
-    eLoss *= (2.* halfThick - 0.003) / (9.36 * layerThickness);
+    eLoss *= (2. * halfThick - 0.003) / (9.36 * layerThickness);
 
+    // Position of the hit in global coordinates
     GlobalPoint hitPos(detector.surface().toGlobal(localPosition));
 
     return std::pair<double, PSimHit*>((hitPos-refPos).mag(),

@@ -17,10 +17,6 @@
 
 
 ///////////////////////////////////////////////
-// PairProduction
-//
-// Description: Implementation of PairProduction in the tracker layers.
-//
 // Author: Patrick Janot
 // Date: 24-Dec-2003
 //
@@ -31,16 +27,41 @@
 
 namespace fastsim
 {
+    //! Computes the probability for photons to convert into an e+e- pair in the tracker layer.
+    /*!
+        In case, it returns a list of two Secondaries (e+ and e-).
+    */
     class PairProduction : public InteractionModel
     {
-    public:
-    PairProduction(const std::string & name,const edm::ParameterSet & cfg);
-    ~PairProduction(){;};
-    void interact(fastsim::Particle & particle, const SimplifiedGeometry & layer,std::vector<std::unique_ptr<fastsim::Particle> > & secondaries,const RandomEngineAndDistribution & random);
-    private:
-    double gbteth(double ener,double partm,double efrac, const RandomEngineAndDistribution & random) const;
-    double minPhotonEnergy_;
-    double Z_;
+        public:
+            //! Constructor.
+        PairProduction(const std::string & name,const edm::ParameterSet & cfg);
+        
+        //! Default destructor.
+        ~PairProduction(){;};
+
+        //! Perform the interaction.
+        /*!
+            \param particle The particle that interacts with the matter.
+            \param layer The detector layer that interacts with the particle.
+            \param secondaries Particles that are produced in the interaction (if any).
+            \param random The Random Engine.
+        */
+        void interact(fastsim::Particle & particle, const SimplifiedGeometry & layer,std::vector<std::unique_ptr<fastsim::Particle> > & secondaries,const RandomEngineAndDistribution & random);
+        
+        private:
+        //! A universal angular distribution.
+        /*!
+            \param ener 
+            \param partm 
+            \param efrac 
+            \param random The Random Engine.
+            \return Theta from universal distribution
+        */
+        double gbteth(double ener,double partm,double efrac, const RandomEngineAndDistribution & random) const;
+        
+        double minPhotonEnergy_; //!< Cut on minimum energy of photons
+        double Z_; //!< Atomic number of material (usually silicon Z=14)
     };
 }
 
@@ -49,6 +70,7 @@ fastsim::PairProduction::PairProduction(const std::string & name,const edm::Para
 {
     // Set the minimal photon energy for possible conversion 
     minPhotonEnergy_ = cfg.getParameter<double>("photonEnergyCut");
+    // Material properties
     Z_ = cfg.getParameter<double>("Z");
 }
 
@@ -101,10 +123,12 @@ void fastsim::PairProduction::interact(fastsim::Particle & particle, const Simpl
         weight = 1. - 4./3.*xe*(1.-xe);
     }while(weight < random.flatShoot());
 
+    // the electron
     double eElectron = xe * eGamma;
     double tElectron = eElectron-eMass;
     double pElectron = std::sqrt(std::max((eElectron+eMass)*tElectron,0.));
 
+    // the positron
     double ePositron = eGamma-eElectron;
     double tPositron = ePositron-eMass;
     double pPositron = std::sqrt((ePositron+eMass)*tPositron);
@@ -169,10 +193,9 @@ fastsim::PairProduction::gbteth(const double ener,
     
     do 
     {
-    double beta = (random.flatShoot()<=w1) ? alfa : 3.0*alfa;
-    u = -std::log(random.flatShoot()*random.flatShoot())/beta;
-    } 
-    while (u>=umax);
+        double beta = (random.flatShoot()<=w1) ? alfa : 3.0*alfa;
+        u = -std::log(random.flatShoot()*random.flatShoot())/beta;
+    }while (u>=umax);
 
     return u;
 }

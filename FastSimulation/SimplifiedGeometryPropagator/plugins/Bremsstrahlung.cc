@@ -17,10 +17,6 @@
 
 
 ///////////////////////////////////////////////
-// MuonBremsstrahlung
-//
-// Description: Implementation of Bremsstrahlung from e+/e- in the tracker layers.
-//
 // Author: Patrick Janot
 // Date: 25-Dec-2003
 //
@@ -32,22 +28,58 @@
 
 namespace fastsim
 {
+    //! Implementation of Bremsstrahlung from e+/e- in the tracker layers.
+    /*!
+        Computes the number, energy and angles of Bremsstrahlung photons emitted by electrons and positrons
+        and modifies e+/e- particle accordingly.
+    */
     class Bremsstrahlung : public InteractionModel
     {
-    public:
-	Bremsstrahlung(const std::string & name,const edm::ParameterSet & cfg);
-    ~Bremsstrahlung(){;};
-	void interact(Particle & particle,const SimplifiedGeometry & layer,std::vector<std::unique_ptr<Particle> > & secondaries,const RandomEngineAndDistribution & random);
-    private:
-	math::XYZTLorentzVector brem(Particle & particle , double xmin,const RandomEngineAndDistribution & random) const;
-	double gbteth(const double ener,
-		      const double partm,
-		      const double efrac,
-		      const RandomEngineAndDistribution & random) const ;
-	unsigned int poisson(double ymu, const RandomEngineAndDistribution & random);
-	double minPhotonEnergy_;
-	double minPhotonEnergyFraction_;
-    double Z_;
+        public:
+        //! Constructor.
+    	Bremsstrahlung(const std::string & name, const edm::ParameterSet & cfg);
+
+        //! Default destructor.
+        ~Bremsstrahlung(){;};
+
+        //! Perform the interaction.
+        /*!
+            \param particle The particle that interacts with the matter.
+            \param layer The detector layer that interacts with the particle.
+            \param secondaries Particles that are produced in the interaction (if any).
+            \param random The Random Engine.
+        */
+    	void interact(Particle & particle, const SimplifiedGeometry & layer, std::vector<std::unique_ptr<Particle> > & secondaries, const RandomEngineAndDistribution & random);
+        
+        private:
+        //! Compute Brem photon energy and angles, if any.
+        /*!
+            \param particle The particle that interacts with the matter.
+            \param xmin Minimum fraction of the particle's energy that has to be converted to a photon.
+            \param random The Random Engine.
+            \return Momentum 4-vector of a bremsstrahlung photon.
+        */
+    	math::XYZTLorentzVector brem(Particle & particle, double xmin, const RandomEngineAndDistribution & random) const;
+    	
+        //! A universal angular distribution.
+        /*!
+            \param ener 
+            \param partm 
+            \param efrac 
+            \param random The Random Engine.
+            \return Theta from universal distribution
+        */
+        double gbteth(const double ener,
+    		      const double partm,
+    		      const double efrac,
+    		      const RandomEngineAndDistribution & random) const ;
+
+        //! Generate numbers according to a Poisson distribution of mean ymu.
+    	unsigned int poisson(double ymu, const RandomEngineAndDistribution & random);
+
+    	double minPhotonEnergy_;  //!< Cut on minimum energy of bremsstrahlung photons
+    	double minPhotonEnergyFraction_;  //!< Cut on minimum fraction of particle's energy which has to be carried by photon
+        double Z_;  //!< Atomic number of material (usually silicon Z=14)
     };
 }
 
@@ -57,6 +89,7 @@ fastsim::Bremsstrahlung::Bremsstrahlung(const std::string & name,const edm::Para
     // Set the minimal photon energy for a Brem from e+/-
     minPhotonEnergy_ = cfg.getParameter<double>("minPhotonEnergy");
     minPhotonEnergyFraction_ = cfg.getParameter<double>("minPhotonEnergyFraction");
+    // Material properties
     Z_ = cfg.getParameter<double>("Z");
 }
 
@@ -81,49 +114,52 @@ void fastsim::Bremsstrahlung::interact(fastsim::Particle & particle, const Simpl
     // Protection : Just stop the electron if more than 1 radiation lengths.
     // This case corresponds to an electron entering the layer parallel to 
     // the layer axis - no reliable simulation can be done in that case...
-    if ( radLengths > 4. ) 
+    if(radLengths > 4.) 
     {
 	particle.momentum().SetXYZT(0.,0.,0.,0.);
 	return;
     }
 
     // electron must have more energy than minimum photon energy
-    if (particle.momentum().E() - particle.momentum().mass() < minPhotonEnergy_)
+    if(particle.momentum().E() - particle.momentum().mass() < minPhotonEnergy_)
     {
 	return;
     }
 
     // Hard brem probability with a photon Energy above threshold.
-    double xmin = std::max(minPhotonEnergy_/particle.momentum().E(),minPhotonEnergyFraction_);
-    if ( xmin >=1. || xmin <=0. ) 
+    double xmin = std::max(minPhotonEnergy_/particle.momentum().E(), minPhotonEnergyFraction_);
+    if(xmin >=1. || xmin <=0.) 
     {
 	return;
     }
-    double bremProba = radLengths * ( 4./3. * std::log(1./xmin)
+
+    // probability to radiate a photon
+    double bremProba = radLengths * (4./3. * std::log(1./xmin)
 				      - 4./3. * (1.-xmin)
-				      + 1./2. * (1.-xmin*xmin) );
+				      + 1./2. * (1.-xmin*xmin));
     
   
     // Number of photons to be radiated.
     unsigned int nPhotons = poisson(bremProba, random);
-    if ( nPhotons == 0) 
+    if(nPhotons == 0) 
     {
 	return;
     }
 
-    //Rotate to the lab frame
+    // Needed to rotate photons to the lab frame
     double theta = particle.momentum().Theta();
     double phi = particle.momentum().Phi();
     
-    // Energy of these photons
-    for ( unsigned int i=0; i<nPhotons; ++i ) 
+    // Calculate energy of these photons and add them to the event
+    for(unsigned int i=0; i<nPhotons; ++i) 
     {
     	// Check that there is enough energy left.
-    	if ( particle.momentum().E() - particle.momentum().mass() < minPhotonEnergy_ ) break;
+    	if(particle.momentum().E() - particle.momentum().mass() < minPhotonEnergy_) break;
 
     	// Add a photon
-    	secondaries.emplace_back(new fastsim::Particle(22,particle.position(),brem(particle, xmin, random)));
-    	secondaries.back()->momentum() = ROOT::Math::RotationZ(phi)*(ROOT::Math::RotationY(theta)*secondaries.back()->momentum());
+    	secondaries.emplace_back(new fastsim::Particle(22, particle.position(), brem(particle, xmin, random)));
+        // Rotate to the lab frame
+    	secondaries.back()->momentum() = ROOT::Math::RotationZ(phi) * (ROOT::Math::RotationY(theta) * secondaries.back()->momentum());
     	
     	// Update the original e+/-
     	particle.momentum() -= secondaries.back()->momentum();
@@ -134,26 +170,23 @@ void fastsim::Bremsstrahlung::interact(fastsim::Particle & particle, const Simpl
 math::XYZTLorentzVector
 fastsim::Bremsstrahlung::brem(fastsim::Particle & particle, double xmin, const RandomEngineAndDistribution & random) const 
 {
-
-    // This is a simple version (a la PDG) of a Brem generator.
-    // It replaces the buggy GEANT3 -> C++ former version.
-    // Author : Patrick Janot - 25-Dec-2003
     double xp=0;
     double weight = 0.;
   
-    do {
-	xp = xmin * std::exp ( -std::log(xmin) * random.flatShoot() );
-	weight = 1. - xp + 3./4.*xp*xp;
-    } while ( weight < random.flatShoot() );
+    do{
+    	xp = xmin * std::exp ( -std::log(xmin) * random.flatShoot() );
+    	weight = 1. - xp + 3./4.*xp*xp;
+    }while(weight < random.flatShoot());
   
   
     // Have photon energy. Now generate angles with respect to the z axis 
     // defined by the incoming particle's momentum.
 
     // Isotropic in phi
-    const double phi = random.flatShoot()*2*M_PI;
+    const double phi = random.flatShoot() * 2. * M_PI;
     // theta from universal distribution
-    const double theta = gbteth(particle.momentum().E(),fastsim::Constants::eMass,xp,random)*fastsim::Constants::eMass/particle.momentum().E();
+    const double theta = gbteth(particle.momentum().E(), fastsim::Constants::eMass, xp, random)
+                            * fastsim::Constants::eMass / particle.momentum().E();
   
     // Make momentum components
     double stheta = std::sin(theta);
@@ -161,8 +194,7 @@ fastsim::Bremsstrahlung::brem(fastsim::Particle & particle, double xmin, const R
     double sphi   = std::sin(phi);
     double cphi   = std::cos(phi);
   
-    return xp * particle.momentum().E() * math::XYZTLorentzVector(stheta*cphi,stheta*sphi,ctheta,1.);
-  
+    return xp * particle.momentum().E() * math::XYZTLorentzVector(stheta*cphi, stheta*sphi, ctheta, 1.);  
 }
 
 double
@@ -180,10 +212,9 @@ fastsim::Bremsstrahlung::gbteth(const double ener,
     
     do 
     {
-	double beta = (random.flatShoot()<=w1) ? alfa : 3.0*alfa;
-	u = -std::log(random.flatShoot()*random.flatShoot())/beta;
-    } 
-    while (u>=umax);
+    	double beta = (random.flatShoot()<=w1) ? alfa : 3.0*alfa;
+    	u = -std::log(random.flatShoot()*random.flatShoot())/beta;
+    }while (u >= umax);
 
     return u;
 }
@@ -197,9 +228,9 @@ fastsim::Bremsstrahlung::poisson(double ymu, const RandomEngineAndDistribution &
     double proba = prob;
     double x = random.flatShoot();
     
-    while ( proba <= x ) {
-	prob *= ymu / double(++n);
-	proba += prob;
+    while(proba <= x){
+    	prob *= ymu / double(++n);
+    	proba += prob;
     }
     
     return n;                                                        
