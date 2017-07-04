@@ -159,17 +159,17 @@ double fastsim::HelixTrajectory::nextCrossingTimeC(const BarrelSimplifiedGeometr
             }
 
             // if the particle is already on the layer, we need to make sure the 2nd solution is picked.
-            // happens if particle turns around in the magnetif field instead of hitting the next layer
+            // happens if particle turns around in the magnetic field instead of hitting the next layer
 
-            // boundaries are set too loose (1e-2): cannot distinguish between both solutions
-            if(std::abs(phi1 - phi_)*radius_ < 1e-2 && std::abs(phi2 - phi_)*radius_ < 1e-2){
-                throw cms::Exception("fastsim::HelixTrajectory::nextCrossingTimeC") << "should not happen. boundaries too loose!";
+            // cannot distinguish between both solutions: don't create a second intersection here
+            if(std::abs(phi1 - phi_)*radius_ < 1e-3 && std::abs(phi2 - phi_)*radius_ < 1e-3){
+                return -1;
             }
 
-            if(std::abs(phi1 - phi_)*radius_ < 1e-2){
+            if(std::abs(phi1 - phi_)*radius_ < 1e-3){
                 return t2*fastsim::Constants::speedOfLight;
             }
-            if(std::abs(phi2 - phi_)*radius_ < 1e-2){
+            if(std::abs(phi2 - phi_)*radius_ < 1e-3){
                 return t1*fastsim::Constants::speedOfLight;
             }
 
