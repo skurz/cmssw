@@ -50,6 +50,23 @@ namespace fastsim
 		//! Default destructor.
 		~SimplifiedGeometry();
 
+		////////
+		// HACK
+		////////
+
+		//! Hack to interface "old" Calorimetry with "new" Tracker
+		enum CaloType{TRACKERBOUNDARY, PRESHOWER1, PRESHOWER2, ECAL, HCAL, VFCAL};
+
+		//! Hack to interface "old" Calorimetry with "new" Tracker
+		void setCaloType(CaloType type) { caloType = type; }
+
+		//! Hack to interface "old" Calorimetry with "new" Tracker
+		CaloType getCaloType() const { return caloType; }
+
+		////////
+		// END
+		////////
+
 		//! Set index of this layer (layers are numbered according to their position in the detector).
 		/*!
 			The (usual) order is increasing 'geomProperty':
@@ -145,6 +162,7 @@ namespace fastsim
 		std::unique_ptr<TH1F> thicknessHist_;  //!< Histogram that stores the tickness (radLengths) along the layer.
 		double nuclearInteractionThicknessFactor_;  //!< Some layers have a different thickness for nuclear interactions.
 		std::vector<InteractionModel *> interactionModels_;  //!< Vector of all interaction models that are assigned with a layer.
+		CaloType caloType; //!< Hack to interface "old" Calorimetry with "new" Tracker
 		
 		static constexpr double epsilonDistanceZ_ = 1.0e-3;  //!< Some epsilon distance in Z to check if particle is on forward layer
 		static constexpr double epsilonDistanceR_ = 1.0e-2;  //!< Some epsilon distance in R to check if particle is on barrel layer

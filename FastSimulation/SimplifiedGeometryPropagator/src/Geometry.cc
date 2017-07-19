@@ -30,8 +30,12 @@ Geometry::Geometry(const edm::ParameterSet& cfg)
     , trackerAlignmentLabel_(cfg.getUntrackedParameter<std::string>("trackerAlignmentLabel",""))
     , barrelLayerCfg_(cfg.getParameter<std::vector<edm::ParameterSet>>("BarrelLayers"))
     , forwardLayerCfg_(cfg.getParameter<std::vector<edm::ParameterSet>>("ForwardLayers"))
-    , maxRadius_(cfg.getUntrackedParameter<double>("maxRadius",240.))
-    , maxZ_(cfg.getUntrackedParameter<double>("maxZ",600.))
+    , maxRadius_(cfg.getUntrackedParameter<double>("maxRadius",500.))
+    , maxZ_(cfg.getUntrackedParameter<double>("maxZ",1200.))
+    , barrelBoundary_(cfg.exists("trackerBarrelBoundary"))  // Hack to interface "old" calo to "new" tracking
+    , forwardBoundary_(cfg.exists("trackerForwardBoundary"))  // Hack to interface "old" calo to "new" tracking
+    , trackerBarrelBoundaryCfg_(barrelBoundary_ ? cfg.getParameter<edm::ParameterSet>("trackerBarrelBoundary") : edm::ParameterSet())  // Hack to interface "old" calo to "new" tracking
+    , trackerForwardBoundaryCfg_(forwardBoundary_ ? cfg.getParameter<edm::ParameterSet>("trackerForwardBoundary") : edm::ParameterSet())  // Hack to interface "old" calo to "new" tracking
 {};
 
 void Geometry::update(const edm::EventSetup & iSetup,const std::map<std::string,fastsim::InteractionModel*> & interactionModelMap)
@@ -79,6 +83,13 @@ void Geometry::update(const edm::EventSetup & iSetup,const std::map<std::string,
     {
 	   barrelLayers_.push_back(simplifiedGeometryFactory.createBarrelSimplifiedGeometry(layerCfg));
     }
+
+    // Hack to interface "old" calo to "new" tracking
+    if(barrelBoundary_){
+        barrelLayers_.push_back(simplifiedGeometryFactory.createBarrelSimplifiedGeometry(trackerBarrelBoundaryCfg_));
+        barrelLayers_.back()->setCaloType(SimplifiedGeometry::TRACKERBOUNDARY);
+    }    
+
     for(unsigned index = 0; index < barrelLayers_.size(); index++)
     {
         // set index
@@ -106,6 +117,15 @@ void Geometry::update(const edm::EventSetup & iSetup,const std::map<std::string,
     	forwardLayers_.push_back(simplifiedGeometryFactory.createForwardSimplifiedGeometry(fastsim::SimplifiedGeometryFactory::POSFWD,layerCfg));
     	forwardLayers_.insert(forwardLayers_.begin(),simplifiedGeometryFactory.createForwardSimplifiedGeometry(fastsim::SimplifiedGeometryFactory::NEGFWD,layerCfg));
     }
+
+    // Hack to interface "old" calo to "new" tracking
+    if(forwardBoundary_){
+        forwardLayers_.push_back(simplifiedGeometryFactory.createForwardSimplifiedGeometry(fastsim::SimplifiedGeometryFactory::POSFWD,trackerForwardBoundaryCfg_));
+        forwardLayers_.back()->setCaloType(SimplifiedGeometry::TRACKERBOUNDARY);
+        forwardLayers_.insert(forwardLayers_.begin(),simplifiedGeometryFactory.createForwardSimplifiedGeometry(fastsim::SimplifiedGeometryFactory::NEGFWD,trackerForwardBoundaryCfg_));
+        forwardLayers_.front()->setCaloType(SimplifiedGeometry::TRACKERBOUNDARY);
+    }
+
     for(unsigned index = 0; index < forwardLayers_.size(); index++)
     {
     	// set index

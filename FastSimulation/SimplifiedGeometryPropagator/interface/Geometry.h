@@ -4,6 +4,7 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/ForwardSimplifiedGeometry.h"
 #include "FastSimulation/SimplifiedGeometryPropagator/interface/BarrelSimplifiedGeometry.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 
 ///////////////////////////////////////////////
@@ -18,7 +19,7 @@ class MagneticField;
 #include <vector>
 
 namespace edm { 
-    class ParameterSet;
+    //class ParameterSet;
     class EventSetup;
 }
 
@@ -165,6 +166,12 @@ namespace fastsim{
 		const std::vector<edm::ParameterSet> forwardLayerCfg_;  //!< The config in which all parameters of the forward layers are defined
 		const double maxRadius_;  //! Upper bound of the radius of the whole tracker geometry
 		const double maxZ_;  //! Upper bound of the length/2 (0 to +Z) of the whole tracker geometry
+
+		const bool barrelBoundary_;  //!< Hack to interface "old" calo to "new" tracking
+		const bool forwardBoundary_;  //!< Hack to interface "old" calo to "new" tracking
+		const edm::ParameterSet trackerBarrelBoundaryCfg_;  //!< Hack to interface "old" calo to "new" tracking
+		const edm::ParameterSet trackerForwardBoundaryCfg_;  //!< Hack to interface "old" calo to "new" tracking
+
     };
     std::ostream& operator << (std::ostream& os , const fastsim::Geometry & geometry);
 }

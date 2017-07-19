@@ -34,6 +34,9 @@ class FSimTrack : public SimTrack {
   
   /// Constructor from the EmmbSimTrack index in the FBaseSimEvent
   FSimTrack(const RawParticle* p, int iv, int ig, int id, FBaseSimEvent* mom, double dt=-1.);
+
+  //! Hack to interface "old" calorimetry with "new" propagation in tracker (need to construct FSimTracks)
+  FSimTrack(int ipart, const math::XYZTLorentzVector& p, int iv, int ig, int id, double charge, const math::XYZTLorentzVector& tkp, const math::XYZTLorentzVector& tkm);
   
   /// Destructor
   virtual ~FSimTrack();
@@ -45,6 +48,7 @@ class FSimTrack : public SimTrack {
   
   /// charge
   inline float charge() const { 
+    if(particleInfo() == 0) return charge_; 
     return particleInfo()->charge();
   }
   
@@ -205,6 +209,7 @@ class FSimTrack : public SimTrack {
   FBaseSimEvent* mom_;
   //  int embd_;   // The index in the SimTrack vector
   int id_; // The index in the FSimTrackVector
+  double charge_; // Charge of the particle
   
   int endv_; // The index of the end vertex in FSimVertex
 

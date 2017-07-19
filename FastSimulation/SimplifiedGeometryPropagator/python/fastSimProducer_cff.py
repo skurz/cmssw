@@ -2,12 +2,14 @@ import FWCore.ParameterSet.Config as cms
 
 from FastSimulation.Event.ParticleFilter_cfi import  ParticleFilterBlock
 from FastSimulation.SimplifiedGeometryPropagator.TrackerMaterial_cfi import TrackerMaterialBlock
+from FastSimulation.SimplifiedGeometryPropagator.CaloMaterial_cfi import CaloMaterialBlock # Hack to interface "old" calorimetry with "new" propagation in tracker
 
 fastSimProducer = cms.EDProducer(
     "FastSimProducer",
     src = cms.InputTag("generatorSmeared"),
     particleFilter =  ParticleFilterBlock.ParticleFilter,
     detectorDefinition = TrackerMaterialBlock.TrackerMaterial,
+    caloDefinition = CaloMaterialBlock.CaloMaterial, #  Hack to interface "old" calorimetry with "new" propagation in tracker
     beamPipeRadius = cms.double(3.),
     deltaRchargedMother = cms.double(0.02), # Maximum angle to associate a charged daughter to a charged mother (mostly done to associate muons to decaying pions)
     interactionModels = cms.PSet(

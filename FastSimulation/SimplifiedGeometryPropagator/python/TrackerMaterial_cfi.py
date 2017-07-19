@@ -7,15 +7,38 @@ _trackerMaterialInteractionModels = cms.untracked.vstring("pairProduction", "nuc
 # Material effects to be simulated in the tracker material and associated cuts 
 TrackerMaterialBlock = cms.PSet(
     TrackerMaterial = cms.PSet(
-        #magneticFieldZ = cms.untracked.double(0.),
-        maxRadius = cms.untracked.double(120.),
-        maxZ = cms.untracked.double(300.),
+        #magneticFieldZ = cms.untracked.double(0.),  # also has to be set in the CaloMaterial_cfi for the time being...
+        maxRadius = cms.untracked.double(150.),
+        maxZ = cms.untracked.double(325.),
         useTrackerRecoGeometryRecord = cms.untracked.bool(True),
         trackerAlignmentLabel = cms.untracked.string("MisAligned"),
         interactionModels = cms.untracked.vstring(
             _trackerMaterialInteractionModels + cms.untracked.vstring("dummyHits")
         ),
+
+        #############
+        ### Hack to interface "old" calorimetry with "new" propagation in tracker
+        #############
+        # Outer boundaries of tracker -> Beginning of calorimetry
+        # This includes: Preshower, ECAL barrel/forward entrance
+        # Radius/z must be slightly smaller than actual geometry (e.g. 0.1cm)       
+        trackerBarrelBoundary = cms.PSet(
+            radius = cms.untracked.double(128.9),
+            limits = cms.untracked.vdouble(0.0, 303.353),
+            thickness = cms.untracked.vdouble(1.),
+            interactionModels = cms.untracked.vstring()
+        ),
+        trackerForwardBoundary = cms.PSet(
+            z = cms.untracked.double(303.253),
+            limits = cms.untracked.vdouble(0.0, 129.),
+            thickness = cms.untracked.vdouble(1.),
+            interactionModels = cms.untracked.vstring()
+        ),
+        #############
+        ### End Hack
+        #############
         
+        # The tracker layers
         BarrelLayers = cms.VPSet(
             ########### Beam Pipe ###########
             #PIPE

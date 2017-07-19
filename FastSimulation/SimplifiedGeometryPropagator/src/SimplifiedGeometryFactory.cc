@@ -210,6 +210,30 @@ std::unique_ptr<fastsim::SimplifiedGeometry> fastsim::SimplifiedGeometryFactory:
     }
 
     // -----------------------------
+    // Hack to interface "old" calorimetry with "new" propagation in tracker
+    // -----------------------------
+
+    if(cfg.exists("caloType"))
+    {
+        std::string caloType = cfg.getUntrackedParameter<std::string>("caloType");
+
+        if(caloType.compare("PRESHOWER1") == 0){
+            layer->setCaloType(SimplifiedGeometry::PRESHOWER1);
+        }else if(caloType.compare("PRESHOWER2") == 0){
+            layer->setCaloType(SimplifiedGeometry::PRESHOWER2);
+        }else if(caloType.compare("ECAL") == 0){
+            layer->setCaloType(SimplifiedGeometry::ECAL);
+        }else if(caloType.compare("HCAL") == 0){
+            layer->setCaloType(SimplifiedGeometry::HCAL);
+        }else if(caloType.compare("VFCAL") == 0){
+            layer->setCaloType(SimplifiedGeometry::VFCAL);
+        }else{
+            throw cms::Exception("fastsim::SimplifiedGeometryFactory") << "unknown caloType '" << caloType << "' (defined PRESHOWER1, PRESHOWER2, ECAL, HCAL, VFCAL)";
+        }
+    }
+
+
+    // -----------------------------
     // and return the layer!
     // -----------------------------
 
