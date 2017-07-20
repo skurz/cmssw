@@ -65,6 +65,7 @@ class FastSimProducer : public edm::stream::EDProducer<> {
 	virtual void beginStream(edm::StreamID id);
     virtual void produce(edm::Event&, const edm::EventSetup&) override;
     virtual void endStream();
+    virtual FSimTrack createFSimTracks(fastsim::Particle* particle, fastsim::ParticleManager* particleManager);
 
     edm::EDGetTokenT<edm::HepMCProduct> genParticlesToken_; //!< Token to get the genParticles
     fastsim::Geometry geometry_; //!< The definition of the detector according to python config
@@ -173,7 +174,7 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			      << "\n###############################";    
 
 	// loop over particles
-    for(std::unique_ptr<fastsim::Particle> particle = particleManager.nextParticle(*_randomEngine); particle != 0;particle=particleManager.nextParticle(*_randomEngine)) 
+    for(std::unique_ptr<fastsim::Particle> particle = particleManager.nextParticle(*_randomEngine); particle != 0; particle=particleManager.nextParticle(*_randomEngine)) 
     {
     	LogDebug(MESSAGECATEGORY) << "\n   moving NEXT particle: " << *particle;
 
@@ -255,102 +256,35 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		// some part of the calorimetry but this is how the code works...
 	    // -----------------------------
 
+	    // The vector of SimTracks needed for the CaloManager
+	    std::vector<FSimTrack> myFSimTracks;
+
 	    if(particle->position().Perp2() > 128.*128. || std::abs(particle->position().Z()) > 303.){
 
 			LogDebug(MESSAGECATEGORY) << "\n   moving particle to calorimetry: " << *particle;
 
 			// create FSimTrack (this is the object the old propagation uses)
-			// TODO: Not sure if correct momentum is used for the track... First argument might have to be momentum at origin vertex
-			FSimTrack myTrack(particle->pdgId(), particle->momentum(), particle->simVertexIndex(), particle->genParticleIndex(), particle->simTrackIndex(), particle->charge(), particle->position(), particle->momentum());
-
-			// move the particle through the caloLayers
-			fastsim::LayerNavigator caloLayerNavigator(caloGeometry_);
-			const fastsim::SimplifiedGeometry * caloLayer = 0;
-
-			// moveParticleToNextLayer(..) returns 0 in case that particle decays
-			// in this case particle is propagated up to its decay vertex
-			while(caloLayerNavigator.moveParticleToNextLayer(*particle,caloLayer))
-			{
-			    LogDebug(MESSAGECATEGORY) << "   moved to next caloLayer: " << *caloLayer;
-				LogDebug(MESSAGECATEGORY) << "   new state: " << *particle;
-
-				// Hack to interface "old" calo to "new" tracking
-				// Particle reached end of calorimetry so stop further propagation
-				if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::HCAL)
-				{
-					caloLayer = 0;
-					break;
-				}
-				if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::ECAL && !caloLayer->isForward() && particle->momentum().X()*particle->position().X() + particle->momentum().Y()*particle->position().Y() < 0)
-				{
-					caloLayer = 0;
-					break;
-				}
-
-				// break after 25 ns: only happens for particles stuck in loops
-			    if(particle->position().T() > 25)
-			    {
-				    caloLayer = 0;
-					break;
-			    }
-
-			    // no material
-			    if(caloLayer->getThickness(particle->position(), particle->momentum()) < 1E-10)
-			    {
-			    	continue;
-			    }
-
-			    // Save ParticlePropagators (RawParticle)
-			    RawParticle PP(particle->momentum());
-			    PP.setVertex(particle->position());
-
-			    if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::PRESHOWER1)
-				{					
-					myTrack.setLayer1(PP, 2);
-				}
-
-				if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::PRESHOWER2)
-				{					
-					myTrack.setLayer2(PP, 2);
-				}
-
-			    if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::ECAL)
-				{					
-					myTrack.setEcal(PP, caloLayer->isForward() ? 2 : 1);
-				}
-
-			    if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::HCAL)
-				{					
-					myTrack.setHcal(PP, caloLayer->isForward() ? 2 : 1);
-				}
-
-				if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::VFCAL)
-				{					
-					myTrack.setVFcal(PP, 2);
-				}
-			    
-			    LogDebug(MESSAGECATEGORY) << "--------------------------------"
-						      << "\n-------------------------------";
-			}
-
-			// do decays
-			// don't have to worry about daughters if particle already within the calorimetry
-			// since they will be rejected by the vertex cut of the ParticleFilter
+			myFSimTracks.push_back(createFSimTracks(particle.get(), &particleManager));
+			// particle was decayed
 			if(!particle->isStable() && particle->remainingProperLifeTimeC() < 1E-10)
 			{
-			    LogDebug(MESSAGECATEGORY) << "Decaying particle...";
-			    std::vector<std::unique_ptr<fastsim::Particle> > secondaries;
-			    decayer_.decay(*particle,secondaries, _randomEngine->theEngine());
-			    LogDebug(MESSAGECATEGORY) << "   decay has " << secondaries.size() << " products";
-			    particleManager.addSecondaries(particle->position(), particle->simTrackIndex(),secondaries);
-			    continue;
+				continue;
 			}
+
+			LogDebug(MESSAGECATEGORY) << "################################"
+						  << "\n###############################";
 		}
 
 		LogDebug(MESSAGECATEGORY) << "################################"
 					  << "\n###############################";
 
     }
+
+
+    // -----------------------------
+    // End Hack
+    // -----------------------------
+    
 
     // store simTracks and simVertices
     iEvent.put(particleManager.harvestSimTracks());
@@ -366,6 +300,151 @@ void
 FastSimProducer::endStream()
 {
 	_randomEngine.reset();
+}
+
+FSimTrack
+FastSimProducer::createFSimTracks(fastsim::Particle* particle, fastsim::ParticleManager* particleManager)
+{
+	// TODO: Not sure if correct momentum is used for the track... First argument might have to be momentum at origin vertex
+	FSimTrack myFSimTrack(particle->pdgId(), particle->momentum(), particle->simVertexIndex(), particle->genParticleIndex(), particle->simTrackIndex(), particle->charge(), particle->position(), particle->momentum());
+
+	// move the particle through the caloLayers
+	fastsim::LayerNavigator caloLayerNavigator(caloGeometry_);
+	const fastsim::SimplifiedGeometry * caloLayer = 0;
+
+	// moveParticleToNextLayer(..) returns 0 in case that particle decays
+	// in this case particle is propagated up to its decay vertex
+	while(caloLayerNavigator.moveParticleToNextLayer(*particle,caloLayer))
+	{
+	    LogDebug(MESSAGECATEGORY) << "   moved to next caloLayer: " << *caloLayer;
+		LogDebug(MESSAGECATEGORY) << "   new state: " << *particle;
+
+		// break after 25 ns: only happens for particles stuck in loops
+	    if(particle->position().T() > 50)
+	    {
+		    caloLayer = 0;
+			break;
+	    }
+
+	    // no material
+	    if(caloLayer->getThickness(particle->position(), particle->momentum()) < 1E-10)
+	    {
+	    	continue;
+	    }
+
+	    //////////
+	    // Save ParticlePropagators (RawParticle)
+	    //////////
+
+	    RawParticle PP(particle->momentum());
+	    PP.setVertex(particle->position());
+
+	    // Stupid variable used by the old propagator
+	    // For details check BaseParticlePropagator.h
+	    int success = 0;
+	    if(caloLayer->isForward())
+	    {
+	    	success = 2;
+	    	// particle moves inwards
+	    	if(particle->position().Z() * particle->momentum().Z() < 0)
+	    	{
+	    		success *= -1;
+	    	}
+	    }
+	    else
+	    {
+	    	success = 1;
+	    	// particle moves inwards
+	    	if(particle->momentum().X() * particle->position().X() + particle->momentum().Y() * particle->position().Y() < 0)
+	    	{
+	    		success *= -1;
+	    	}
+	    }
+
+	    // Save the hit
+	    if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::PRESHOWER1)
+		{	
+			if(myFSimTrack.onLayer1())
+			{
+				break;
+			}
+			else
+			{
+				myFSimTrack.setLayer1(PP, success);
+			}
+		}
+
+		if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::PRESHOWER2)
+		{					
+			if(myFSimTrack.onLayer2())
+			{
+				break;
+			}
+			else
+			{
+				myFSimTrack.setLayer2(PP, success);
+			}
+		}
+
+	    if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::ECAL)
+		{					
+			if(myFSimTrack.onEcal())
+			{
+				break;
+			}
+			else
+			{
+				myFSimTrack.setEcal(PP, success);
+			}
+		}
+
+	    if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::HCAL)
+		{					
+			if(myFSimTrack.onHcal())
+			{
+				break;
+			}
+			else
+			{
+				myFSimTrack.setHcal(PP, success);
+			}
+		}
+
+		if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::VFCAL)
+		{					
+			if(myFSimTrack.onVFcal())
+			{
+				break;
+			}
+			else
+			{
+				myFSimTrack.setVFcal(PP, success);
+			}
+		}
+
+		// Particle reached end of detector
+		if(caloLayer->getCaloType() == fastsim::SimplifiedGeometry::HCAL || caloLayer->getCaloType() == fastsim::SimplifiedGeometry::VFCAL)
+		{
+			break;
+		}
+	    
+	    LogDebug(MESSAGECATEGORY) << "--------------------------------"
+				      << "\n-------------------------------";
+	}
+
+	// do decays
+	// don't have to worry about daughters if particle already within the calorimetry
+	// since they will be rejected by the vertex cut of the ParticleFilter
+	if(!particle->isStable() && particle->remainingProperLifeTimeC() < 1E-10)
+	{
+	    LogDebug(MESSAGECATEGORY) << "Decaying particle...";
+	    std::vector<std::unique_ptr<fastsim::Particle> > secondaries;
+	    decayer_.decay(*particle,secondaries, _randomEngine->theEngine());
+	    LogDebug(MESSAGECATEGORY) << "   decay has " << secondaries.size() << " products";
+	    particleManager->addSecondaries(particle->position(), particle->simTrackIndex(),secondaries);
+	}
+
+	return myFSimTrack;
 }
 
 DEFINE_FWK_MODULE(FastSimProducer);
