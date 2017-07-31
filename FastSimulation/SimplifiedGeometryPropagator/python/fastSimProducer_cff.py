@@ -3,12 +3,16 @@ import FWCore.ParameterSet.Config as cms
 from FastSimulation.Event.ParticleFilter_cfi import  ParticleFilterBlock
 from FastSimulation.SimplifiedGeometryPropagator.TrackerMaterial_cfi import TrackerMaterialBlock
 from FastSimulation.SimplifiedGeometryPropagator.CaloMaterial_cfi import CaloMaterialBlock # Hack to interface "old" calorimetry with "new" propagation in tracker
+from FastSimulation.Calorimetry.Calorimetry_cff import *
+from FastSimulation.MaterialEffects.MaterialEffects_cfi import *
 
 fastSimProducer = cms.EDProducer(
     "FastSimProducer",
     src = cms.InputTag("generatorSmeared"),
     particleFilter =  ParticleFilterBlock.ParticleFilter,
     detectorDefinition = TrackerMaterialBlock.TrackerMaterial,
+    simulateCalorimetry = cms.bool(True),
+    simulateMuons = cms.bool(True),
     caloDefinition = CaloMaterialBlock.CaloMaterial, #  Hack to interface "old" calorimetry with "new" propagation in tracker
     beamPipeRadius = cms.double(3.),
     deltaRchargedMother = cms.double(0.02), # Maximum angle to associate a charged daughter to a charged mother (mostly done to associate muons to decaying pions)
@@ -68,8 +72,12 @@ fastSimProducer = cms.EDProducer(
                 minMomentumCut = cms.double(0.1),
                 doHitsFromInboundParticles = cms.bool(False), # Track reconstruction not possible for those particles so hits do not have to be simulated
                 ),    
-            dummyHits = cms.PSet(
-                className = cms.string("fastsim::DummyHitProducer")
-                ),
-            ),
-    )
+            #dummyHits = cms.PSet(
+            #    className = cms.string("fastsim::DummyHitProducer")
+            #    ),
+        ),
+    Calorimetry = FamosCalorimetryBlock.Calorimetry,
+    MaterialEffectsForMuonsInECAL = MaterialEffectsForMuonsInECALBlock.MaterialEffectsForMuonsInECAL,
+    MaterialEffectsForMuonsInHCAL = MaterialEffectsForMuonsInHCALBlock.MaterialEffectsForMuonsInHCAL,
+    GFlash = FamosCalorimetryBlock.GFlash,
+)

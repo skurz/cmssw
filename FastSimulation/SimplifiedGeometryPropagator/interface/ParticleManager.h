@@ -88,6 +88,9 @@ namespace fastsim {
 		//! Returns the simVertices so they can be added to the event.
 		std::unique_ptr<std::vector<SimVertex> > harvestSimVertices() { return std::move(simVertices_);	}
 
+		//! Returns the position of a given SimVertex. Needed for interfacing the code with the old calorimetry.
+		const SimVertex getSimVertex(unsigned i) { return simVertices_->at(i); }
+
 		//! Necessary to add an end vertex to a particle.
 		/*!
             Needed if particle is no longer propagated for some reason (e.g. remaining energy below threshold) and no

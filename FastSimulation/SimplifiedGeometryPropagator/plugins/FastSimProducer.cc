@@ -37,6 +37,13 @@
 
 // Hack for calorimetry
 #include "FastSimulation/Event/interface/FSimTrack.h"
+#include "FastSimulation/Calorimetry/interface/CalorimetryManager.h"
+#include "FastSimulation/CaloGeometryTools/interface/CaloGeometryHelper.h"  
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "Geometry/CaloEventSetup/interface/CaloTopologyRecord.h"
+#include "FastSimulation/ShowerDevelopment/interface/FastHFShowerLibrary.h"
+
 
 
 ///////////////////////////////////////////////
@@ -65,7 +72,7 @@ class FastSimProducer : public edm::stream::EDProducer<> {
 	virtual void beginStream(edm::StreamID id);
     virtual void produce(edm::Event&, const edm::EventSetup&) override;
     virtual void endStream();
-    virtual FSimTrack createFSimTracks(fastsim::Particle* particle, fastsim::ParticleManager* particleManager);
+    virtual FSimTrack createFSimTrack(fastsim::Particle* particle, fastsim::ParticleManager* particleManager);
 
     edm::EDGetTokenT<edm::HepMCProduct> genParticlesToken_; //!< Token to get the genParticles
     fastsim::Geometry geometry_; //!< The definition of the detector according to python config
@@ -74,6 +81,11 @@ class FastSimProducer : public edm::stream::EDProducer<> {
     double deltaRchargedMother_;  //!< Cut on deltaR for ClosestChargedDaughter algorithm (FastSim tracking)
     fastsim::ParticleFilter particleFilter_;  //!< Decides which particles have to be propagated
     std::unique_ptr<RandomEngineAndDistribution> _randomEngine;  //!< The random engine
+
+    bool simulateCalorimetry;
+    std::unique_ptr<CalorimetryManager> myCalorimetry; // unfortunately, default constructor cannot be called
+    bool simulateMuons;    
+
     fastsim::Decayer decayer_;  //!< Handles decays of non-stable particles using pythia
     std::vector<std::unique_ptr<fastsim::InteractionModel> > interactionModels_;  //!< All defined interaction models
     std::map<std::string, fastsim::InteractionModel *> interactionModelMap_;  //!< Each interaction model has a unique name
@@ -91,6 +103,8 @@ FastSimProducer::FastSimProducer(const edm::ParameterSet& iConfig)
     , deltaRchargedMother_(iConfig.getParameter<double>("deltaRchargedMother"))
     , particleFilter_(iConfig.getParameter<edm::ParameterSet>("particleFilter"))
     , _randomEngine(nullptr)
+    , simulateCalorimetry(iConfig.getParameter<bool>("simulateCalorimetry"))
+    , simulateMuons(iConfig.getParameter<bool>("simulateMuons"))
 {
 
     //----------------
@@ -114,6 +128,18 @@ FastSimProducer::FastSimProducer(const edm::ParameterSet& iConfig)
     }
 
     //----------------
+    // calorimetry
+    //---------------
+
+    if(simulateCalorimetry){
+		myCalorimetry.reset(new CalorimetryManager(0,
+							iConfig.getParameter<edm::ParameterSet>("Calorimetry"),			     
+							iConfig.getParameter<edm::ParameterSet>("MaterialEffectsForMuonsInECAL"),
+							iConfig.getParameter<edm::ParameterSet>("MaterialEffectsForMuonsInHCAL"),
+							iConfig.getParameter<edm::ParameterSet>("GFlash")));
+	}    
+
+    //----------------
     // register products
     //----------------
 
@@ -125,6 +151,11 @@ FastSimProducer::FastSimProducer(const edm::ParameterSet& iConfig)
     {
 		interactionModel->registerProducts(*this);
     }
+    produces<edm::PCaloHitContainer>("EcalHitsEB");
+    produces<edm::PCaloHitContainer>("EcalHitsEE");
+    produces<edm::PCaloHitContainer>("EcalHitsES");
+    produces<edm::PCaloHitContainer>("HcalHits");
+    if(simulateMuons) produces<edm::SimTrackContainer>("MuonSimTracks");
 }
 
 void
@@ -169,6 +200,27 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 											,particleFilter_
 											,output_simTracks
 											,output_simVertices);
+
+    //  Initialize the calorimeter geometry
+	if(simulateCalorimetry)
+	{
+		edm::ESHandle<CaloGeometry> pG;
+		iSetup.get<CaloGeometryRecord>().get(pG);   
+		myCalorimetry->getCalorimeter()->setupGeometry(*pG);
+
+		edm::ESHandle<CaloTopology> theCaloTopology;
+		iSetup.get<CaloTopologyRecord>().get(theCaloTopology);     
+		myCalorimetry->getCalorimeter()->setupTopology(*theCaloTopology);
+		myCalorimetry->getCalorimeter()->initialize(geometry_.getMagneticFieldZ(math::XYZTLorentzVector(0., 0., 0., 0.)));
+
+		myCalorimetry->getHFShowerLibrary()->initHFShowerLibrary(iSetup);
+
+		myCalorimetry->initialize();
+	}
+
+	// The vector of SimTracks needed for the CaloManager
+	std::vector<FSimTrack> myFSimTracks;
+
 	
     LogDebug(MESSAGECATEGORY) << "################################"
 			      << "\n###############################";    
@@ -256,15 +308,12 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		// some part of the calorimetry but this is how the code works...
 	    // -----------------------------
 
-	    // The vector of SimTracks needed for the CaloManager
-	    std::vector<FSimTrack> myFSimTracks;
-
 	    if(particle->position().Perp2() > 128.*128. || std::abs(particle->position().Z()) > 303.){
 
 			LogDebug(MESSAGECATEGORY) << "\n   moving particle to calorimetry: " << *particle;
 
 			// create FSimTrack (this is the object the old propagation uses)
-			myFSimTracks.push_back(createFSimTracks(particle.get(), &particleManager));
+			myFSimTracks.push_back(createFSimTrack(particle.get(), &particleManager));
 			// particle was decayed
 			if(!particle->isStable() && particle->remainingProperLifeTimeC() < 1E-10)
 			{
@@ -275,16 +324,15 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 						  << "\n###############################";
 		}
 
+	    // -----------------------------
+    	// End Hack
+    	// -----------------------------
+
+
 		LogDebug(MESSAGECATEGORY) << "################################"
 					  << "\n###############################";
 
     }
-
-
-    // -----------------------------
-    // End Hack
-    // -----------------------------
-    
 
     // store simTracks and simVertices
     iEvent.put(particleManager.harvestSimTracks());
@@ -294,6 +342,40 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     {
 		interactionModel->storeProducts(iEvent);
     }
+
+
+    // -----------------------------
+	// Calorimetry Manager
+	// -----------------------------
+
+    for(auto myFSimTrack : myFSimTracks)
+    {
+    	myCalorimetry->reconstructTrack(myFSimTrack, _randomEngine.get());
+    }
+
+    // store calohits
+	std::unique_ptr<edm::PCaloHitContainer> p4(new edm::PCaloHitContainer);
+	std::unique_ptr<edm::PCaloHitContainer> p5(new edm::PCaloHitContainer);
+	std::unique_ptr<edm::PCaloHitContainer> p6(new edm::PCaloHitContainer); 
+	std::unique_ptr<edm::PCaloHitContainer> p7(new edm::PCaloHitContainer);
+	myCalorimetry->loadFromEcalBarrel(*p4);
+	myCalorimetry->loadFromEcalEndcap(*p5);
+	myCalorimetry->loadFromPreshower(*p6);
+	myCalorimetry->loadFromHcal(*p7);
+	iEvent.put(std::move(p4),"EcalHitsEB");
+	iEvent.put(std::move(p5),"EcalHitsEE");
+	iEvent.put(std::move(p6),"EcalHitsES");
+	iEvent.put(std::move(p7),"HcalHits");
+
+	// store muonTracks
+	std::unique_ptr<edm::SimTrackContainer> m1(new edm::SimTrackContainer);
+	myCalorimetry->harvestMuonSimTracks(*m1);
+	if(simulateMuons) iEvent.put(std::move(m1),"MuonSimTracks");
+
+
+	// -----------------------------
+	// Muon system
+	// -----------------------------
 }
 
 void
@@ -303,10 +385,10 @@ FastSimProducer::endStream()
 }
 
 FSimTrack
-FastSimProducer::createFSimTracks(fastsim::Particle* particle, fastsim::ParticleManager* particleManager)
+FastSimProducer::createFSimTrack(fastsim::Particle* particle, fastsim::ParticleManager* particleManager)
 {
 	// TODO: Not sure if correct momentum is used for the track... First argument might have to be momentum at origin vertex
-	FSimTrack myFSimTrack(particle->pdgId(), particle->momentum(), particle->simVertexIndex(), particle->genParticleIndex(), particle->simTrackIndex(), particle->charge(), particle->position(), particle->momentum());
+	FSimTrack myFSimTrack(particle->pdgId(), particle->momentum(), particle->simVertexIndex(), particle->genParticleIndex(), particle->simTrackIndex(), particle->charge(), particle->position(), particle->momentum(), particleManager->getSimVertex(particle->simVertexIndex()));
 
 	// move the particle through the caloLayers
 	fastsim::LayerNavigator caloLayerNavigator(caloGeometry_);

@@ -6,6 +6,7 @@
 
 // CMSSW Headers
 #include "SimDataFormats/Track/interface/SimTrack.h"
+#include "SimDataFormats/Vertex/interface/SimVertex.h"
 
 // FAMOS headers
 #include "FastSimulation/Particle/interface/RawParticle.h"
@@ -36,7 +37,7 @@ class FSimTrack : public SimTrack {
   FSimTrack(const RawParticle* p, int iv, int ig, int id, FBaseSimEvent* mom, double dt=-1.);
 
   //! Hack to interface "old" calorimetry with "new" propagation in tracker (need to construct FSimTracks)
-  FSimTrack(int ipart, const math::XYZTLorentzVector& p, int iv, int ig, int id, double charge, const math::XYZTLorentzVector& tkp, const math::XYZTLorentzVector& tkm);
+  FSimTrack(int ipart, const math::XYZTLorentzVector& p, int iv, int ig, int id, double charge, const math::XYZTLorentzVector& tkp, const math::XYZTLorentzVector& tkm, const SimVertex& tkv);
   
   /// Destructor
   virtual ~FSimTrack();
@@ -54,7 +55,7 @@ class FSimTrack : public SimTrack {
   
 
   /// Origin vertex
-  inline const FSimVertex& vertex() const;
+  inline const FSimVertex vertex() const;
 
   /// end vertex
   inline const FSimVertex& endVertex() const;
@@ -148,6 +149,9 @@ class FSimTrack : public SimTrack {
   /// The particle at HCAL exir
   inline const RawParticle& hoEntrance() const { return HO_Entrance; }
 
+  /// Set origin vertex
+  inline void setOriginVertex(const SimVertex& v) { vertex_ = v; } 
+
   /// Set the end vertex
   inline void setEndVertex(int endv) { endv_ = endv; } 
 
@@ -205,6 +209,7 @@ class FSimTrack : public SimTrack {
  private:
 
   //  HepMC::GenParticle* me_;
+  SimVertex vertex_;
 
   FBaseSimEvent* mom_;
   //  int embd_;   // The index in the SimTrack vector

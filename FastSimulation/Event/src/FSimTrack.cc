@@ -30,8 +30,8 @@ FSimTrack::FSimTrack(const RawParticle* p,
          
 //! Hack to interface "old" calorimetry with "new" propagation in tracker (need to construct FSimTracks)
 // Not sure if momentum in constructor of SimTrack and momentum_ are correctly set...
-FSimTrack::FSimTrack(int ipart, const math::XYZTLorentzVector& p, int iv, int ig, int id, double charge, const math::XYZTLorentzVector& tkp, const math::XYZTLorentzVector& tkm) :
-  SimTrack(ipart, p, iv, ig, math::XYZVectorD(tkp.X(), tkp.Y(), tkp.Z()),  tkm), 
+FSimTrack::FSimTrack(int ipart, const math::XYZTLorentzVector& p, int iv, int ig, int id, double charge, const math::XYZTLorentzVector& tkp, const math::XYZTLorentzVector& tkm, const SimVertex& tkv) :
+  SimTrack(ipart, p, iv, ig, math::XYZVectorD(tkp.X(), tkp.Y(), tkp.Z()),  tkm), vertex_(tkv),
   mom_(0), id_(id), charge_(charge), endv_(-1),
   layer1(0), layer2(0), ecal(0), hcal(0), vfcal(0), hcalexit(0), hoentr(0), prop(false),
   closestDaughterId_(-1), info_(0), momentum_(tkm),
@@ -114,7 +114,6 @@ FSimTrack::setHO(const RawParticle& pp, int success) {
 
 
 std::ostream& operator <<(std::ostream& o , const FSimTrack& t) {
-
   std::string name = t.particleInfo() ? t.particleInfo()->name() : "Unknown";
   XYZTLorentzVector momentum1 = t.momentum();
   XYZVector vertex1 = t.vertex().position().Vect();
@@ -137,7 +136,7 @@ std::ostream& operator <<(std::ostream& o , const FSimTrack& t) {
     << std::setw(6) << std::setprecision(1) << vertex1.x() << " " 
     << std::setw(6) << std::setprecision(1) << vertex1.y() << " " 
     << std::setw(6) << std::setprecision(1) << vertex1.z() << " "
-    << std::setw(4) << (t.noMother() ? -1 :t.mother().id()) << " ";
+    << std::setw(4) << (t.particleInfo() ? (t.noMother() ? -1 :t.mother().id()) :-1) << " ";
   
   if ( !t.noEndVertex() ) {
     XYZTLorentzVector vertex2 = t.endVertex().position();

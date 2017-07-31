@@ -39,10 +39,10 @@ void fastsim::DummyHitProducer::registerProducts(edm::ProducerBase & producer) c
     producer.produces<edm::PSimHitContainer>("MuonCSCHits");
     producer.produces<edm::PSimHitContainer>("MuonDTHits");
     producer.produces<edm::PSimHitContainer>("MuonRPCHits");
-    producer.produces<edm::PCaloHitContainer>("EcalHitsEB");
-    producer.produces<edm::PCaloHitContainer>("EcalHitsEE");
-    producer.produces<edm::PCaloHitContainer>("EcalHitsES");
-    producer.produces<edm::PCaloHitContainer>("HcalHits");
+    //producer.produces<edm::PCaloHitContainer>("EcalHitsEB");
+    //producer.produces<edm::PCaloHitContainer>("EcalHitsEE");
+    //producer.produces<edm::PCaloHitContainer>("EcalHitsES");
+    //producer.produces<edm::PCaloHitContainer>("HcalHits");
 }
 
 void fastsim::DummyHitProducer::interact(Particle & particle,
@@ -60,10 +60,10 @@ void fastsim::DummyHitProducer::storeProducts(edm::Event & iEvent)
     iEvent.put(std::move(std::unique_ptr<edm::PSimHitContainer>(new edm::PSimHitContainer())),"MuonCSCHits");
     iEvent.put(std::move(std::unique_ptr<edm::PSimHitContainer>(new edm::PSimHitContainer())),"MuonDTHits");
     iEvent.put(std::move(std::unique_ptr<edm::PSimHitContainer>(new edm::PSimHitContainer())),"MuonRPCHits");
-    iEvent.put(std::move(std::unique_ptr<edm::PCaloHitContainer>(new edm::PCaloHitContainer())),"EcalHitsEB");
-    iEvent.put(std::move(std::unique_ptr<edm::PCaloHitContainer>(new edm::PCaloHitContainer())),"EcalHitsEE");
-    iEvent.put(std::move(std::unique_ptr<edm::PCaloHitContainer>(new edm::PCaloHitContainer())),"EcalHitsES");
-    iEvent.put(std::move(std::unique_ptr<edm::PCaloHitContainer>(new edm::PCaloHitContainer())),"HcalHits");
+    //iEvent.put(std::move(std::unique_ptr<edm::PCaloHitContainer>(new edm::PCaloHitContainer())),"EcalHitsEB");
+    //iEvent.put(std::move(std::unique_ptr<edm::PCaloHitContainer>(new edm::PCaloHitContainer())),"EcalHitsEE");
+    //iEvent.put(std::move(std::unique_ptr<edm::PCaloHitContainer>(new edm::PCaloHitContainer())),"EcalHitsES");
+    //iEvent.put(std::move(std::unique_ptr<edm::PCaloHitContainer>(new edm::PCaloHitContainer())),"HcalHits");
 }
 
 DEFINE_EDM_PLUGIN(

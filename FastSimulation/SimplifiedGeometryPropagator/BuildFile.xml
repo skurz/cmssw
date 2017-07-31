@@ -15,6 +15,9 @@
 <use name="SimDataFormats/EncodedEventId"/>
 
 <use name="Geometry/CommonDetUnit"/>
+<use name="Geometry/Records"/>
+<use name="Geometry/CaloGeometry"/>
+
 <use name="CondFormats/External"/>
 <use name="DataFormats/Math"/>
 
@@ -22,6 +25,9 @@
 <use name="MagneticField/Records"/>
 
 <use name="FastSimulation/TrajectoryManager"/>
+<use name="FastSimulation/Calorimetry"/>
+<use name="FastSimulation/CaloGeometryTools"/>
+<use name="FastSimulation/ShowerDevelopment"/>
 
 <use name="RecoTracker/Record"/>
 <use name="RecoTracker/TkDetLayers"/>

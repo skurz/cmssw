@@ -5,7 +5,7 @@ from Configuration.StandardSequences.Eras import eras
 process = cms.Process("DEMO",eras.Run2_2016,eras.fastSim)
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(10)
 )
 
 # load particle data table
@@ -143,6 +143,8 @@ process.mixSimVertices.input = cms.VInputTag(cms.InputTag("fastSimProducer"))
 process.detachedTripletStepTrackCandidates.simTracks = cms.InputTag("fastSimProducer")
 process.fastElectronCkfTrackCandidates.simTracks = cms.InputTag("fastSimProducer")
 
+process.MuonSimHits.MUONS.simModuleLabel = cms.string('fastSimProducer')
+
 # Not sure if I need all those
 process.initialStepTrackCandidates.simTracks = cms.InputTag("fastSimProducer")
 process.lowPtTripletStepTrackCandidates.simTracks = cms.InputTag("fastSimProducer")
@@ -212,6 +214,9 @@ process.DQMoutput = cms.OutputModule("DQMRootOutputModule",
 
 
 # Path and EndPath definitions
+#process.psim.replace(process.famosSimHits, process.fastSimProducer)
+#process.simulation_step = cms.Path(process.psim)
+
 process.simulation_step = cms.Path(process.fastSimProducer)
 process.reconstruction_befmix_step = cms.Path(process.reconstruction_befmix)
 process.digitisation_step = cms.Path(process.pdigi_valid)

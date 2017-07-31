@@ -12,6 +12,12 @@
 
 <use name="FastSimulation/TrajectoryManager"/>
 <use name="FastSimulation/SimplifiedGeometryPropagator"/>
+<use name="FastSimulation/Calorimetry"/>
+<use name="FastSimulation/CaloGeometryTools"/>
+<use name="FastSimulation/ShowerDevelopment"/>
+
+<use name="Geometry/Records"/>
+<use name="Geometry/CaloGeometry"/>
 
 <use name="DataFormats/Math"/>
 
