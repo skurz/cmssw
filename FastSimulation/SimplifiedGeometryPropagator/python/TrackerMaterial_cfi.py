@@ -13,7 +13,7 @@ TrackerMaterialBlock = cms.PSet(
         useTrackerRecoGeometryRecord = cms.untracked.bool(True),
         trackerAlignmentLabel = cms.untracked.string("MisAligned"),
         interactionModels = cms.untracked.vstring(
-            _trackerMaterialInteractionModels + cms.untracked.vstring("dummyHits")
+            _trackerMaterialInteractionModels #+ cms.untracked.vstring("dummyHits")
         ),
 
         #############
