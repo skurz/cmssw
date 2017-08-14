@@ -154,6 +154,7 @@ void CalorimetryManager::clean()
   HMapping_.clear();
   ESMapping_.clear();
   muonSimTracks.clear();
+  savedMuonSimTracks.clear();
 }
 
 CalorimetryManager::~CalorimetryManager()
@@ -179,71 +180,80 @@ void CalorimetryManager::reconstruct(RandomEngineAndDistribution const* random)
       if(debug_)
 	mySimEvent->print();
     }
-  // Clear the content of the calorimeters 
-  if(!initialized_)
-    {
-      
-      // Check if the preshower is really available
-      if(simulatePreshower_ && !myCalorimeter_->preshowerPresent())
-	{
-	  std::cout << " WARNING " << std::endl;
-	  std::cout << " The preshower simulation has been turned on; but no preshower geometry is available " << std::endl;
-	  std::cout << " Disabling the preshower simulation " << std::endl;
-	  simulatePreshower_ = false;
-	}
-      
-      initialized_=true;
-    }
-  clean();
+
+  initialize();
   
   LogInfo("FastCalorimetry") << "Reconstructing " << (int) mySimEvent->nTracks() << " tracks." << std::endl;
   for( int fsimi=0; fsimi < (int) mySimEvent->nTracks() ; ++fsimi) {
     
     FSimTrack& myTrack = mySimEvent->track(fsimi);
     
-    int pid = abs(myTrack.type());
-    
-    if (debug_) {
-      LogInfo("FastCalorimetry") << " ===> pid = "  << pid << std::endl;      
-    }
-    
-    
-    // Check that the particle hasn't decayed
-    if(myTrack.noEndVertex()) {
-      // Simulate energy smearing for photon and electrons
-      if ( pid == 11 || pid == 22 ) {
-	
-	if ( myTrack.onEcal() ) 
-	  EMShowerSimulation(myTrack, random);
-	else if ( myTrack.onVFcal() ) {
-          if(useShowerLibrary) {
-            theHFShowerLibrary->recoHFShowerLibrary(myTrack);  
-            myHDResponse_->correctHF(myTrack.hcalEntrance().e(),abs(myTrack.type()));
-            updateHCAL(theHFShowerLibrary->getHitsMap(),myTrack.id());
-          } 
-          else reconstructHCAL(myTrack, random);
-	}   
-      } // electron or photon
-      else if (pid==13)
-	{
-          MuonMipSimulation(myTrack, random);
-	}
-      // Simulate energy smearing for hadrons (i.e., everything 
-      // but muons... and SUSY particles that deserve a special 
-      // treatment.
-      else if ( pid < 1000000 ) {
-	if ( myTrack.onHcal() || myTrack.onVFcal() ) { 	  
-	  if(optionHDSim_ == 0 )  reconstructHCAL(myTrack, random);
-	  else HDShowerSimulation(myTrack, random);
-	}
-      } // pid < 1000000 
-    } // myTrack.noEndVertex()
+    reconstructTrack(myTrack, random);
   } // particle loop
   //  LogInfo("FastCalorimetry") << " Number of  hits (barrel)" << EBMapping_.size() << std::endl;
   //  LogInfo("FastCalorimetry") << " Number of  hits (Hcal)" << HMapping_.size() << std::endl;
   //  std::cout << " Nombre de hit (endcap)" << EEMapping_.size() << std::endl;
   
 } // reconstruct
+
+void CalorimetryManager::initialize(){
+  // Clear the content of the calorimeters 
+  if(!initialized_)
+    {
+      
+      // Check if the preshower is really available
+      if(simulatePreshower_ && !myCalorimeter_->preshowerPresent())
+  {
+    std::cout << " WARNING " << std::endl;
+    std::cout << " The preshower simulation has been turned on; but no preshower geometry is available " << std::endl;
+    std::cout << " Disabling the preshower simulation " << std::endl;
+    simulatePreshower_ = false;
+  }
+      
+      initialized_=true;
+    }
+  clean();
+}
+
+void CalorimetryManager::reconstructTrack(FSimTrack& myTrack, RandomEngineAndDistribution const* random){
+  int pid = abs(myTrack.type());
+    
+  if (debug_) {
+    LogInfo("FastCalorimetry") << " ===> pid = "  << pid << std::endl;      
+  }
+  
+  
+  // Check that the particle hasn't decayed
+  if(myTrack.noEndVertex()) {
+    // Simulate energy smearing for photon and electrons
+    if ( pid == 11 || pid == 22 ) {
+  
+  if ( myTrack.onEcal() ) 
+    EMShowerSimulation(myTrack, random);
+  else if ( myTrack.onVFcal() ) {
+          if(useShowerLibrary) {
+            theHFShowerLibrary->recoHFShowerLibrary(myTrack);  
+            myHDResponse_->correctHF(myTrack.hcalEntrance().e(),abs(myTrack.type()));
+            updateHCAL(theHFShowerLibrary->getHitsMap(),myTrack.id());
+          } 
+          else reconstructHCAL(myTrack, random);
+  }   
+      } // electron or photon
+      else if (pid==13)
+  {
+          MuonMipSimulation(myTrack, random);
+  }
+      // Simulate energy smearing for hadrons (i.e., everything 
+      // but muons... and SUSY particles that deserve a special 
+      // treatment.
+      else if ( pid < 1000000 ) {
+  if ( myTrack.onHcal() || myTrack.onVFcal() ) {    
+    if(optionHDSim_ == 0 )  reconstructHCAL(myTrack, random);
+    else HDShowerSimulation(myTrack, random);
+  }
+      } // pid < 1000000 
+    } // myTrack.noEndVertex()
+}
 
 // Simulation of electromagnetic showers in PS, ECAL, HCAL 
 void CalorimetryManager::EMShowerSimulation(const FSimTrack& myTrack,
@@ -862,11 +872,14 @@ void CalorimetryManager::MuonMipSimulation(const FSimTrack& myTrack, RandomEngin
   // Backward compatibility behaviour
   if(!theMuonHcalEffects) 
     {
+      savedMuonSimTracks.push_back(myTrack);
+
       if(myTrack.onHcal() || myTrack.onVFcal() ) 
 	reconstructHCAL(myTrack, random);
       
       return;
     }
+
   
   if(debug_)
     LogInfo("FastCalorimetry") << "CalorimetryManager::MuonMipSimulation - track param."
@@ -1061,7 +1074,6 @@ void CalorimetryManager::MuonMipSimulation(const FSimTrack& myTrack, RandomEngin
   } // else just leave tracker surface position and momentum...  
   
   muonSimTracks.push_back(muonTrack);
-  
   
   // no need to change below this line
   std::map<CaloHitID,float>::const_iterator mapitr;
@@ -1418,5 +1430,17 @@ void CalorimetryManager::loadMuonSimTracks(edm::SimTrackContainer &muons) const
       //	}
     }
   
+}
+
+
+void CalorimetryManager::harvestMuonSimTracks(edm::SimTrackContainer &c) const
+{
+  c.reserve(muonSimTracks.size()+savedMuonSimTracks.size());
+  for(unsigned i=0; i<muonSimTracks.size(); i++) {
+    if(muonSimTracks[i].momentum().perp2() > 1.0 && fabs(muonSimTracks[i].momentum().eta()) < 3.0)  c.push_back(muonSimTracks[i]);
+  }
+  for(unsigned i=0; i<savedMuonSimTracks.size(); i++) {
+    if(savedMuonSimTracks[i].momentum().perp2() > 1.0 && fabs(savedMuonSimTracks[i].momentum().eta()) < 3.0)  c.push_back(savedMuonSimTracks[i]);
+  }
 }
 
