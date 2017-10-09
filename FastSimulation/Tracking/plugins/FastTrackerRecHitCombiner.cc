@@ -25,15 +25,15 @@ class FastTrackerRecHitCombiner : public edm::stream::EDProducer<> {
     public:
 
     explicit FastTrackerRecHitCombiner(const edm::ParameterSet&);
-    ~FastTrackerRecHitCombiner(){;}
+    ~FastTrackerRecHitCombiner() override{;}
 
     static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
     private:
 
-    virtual void beginStream(edm::StreamID) override{;}
-    virtual void produce(edm::Event&, const edm::EventSetup&) override;
-    virtual void endStream() override{;}
+    void beginStream(edm::StreamID) override{;}
+    void produce(edm::Event&, const edm::EventSetup&) override;
+    void endStream() override{;}
 
     // ----------member data ---------------------------
     edm::EDGetTokenT<edm::PSimHitContainer> simHitsToken; 
@@ -71,6 +71,8 @@ void
 	// get simHit and recHit
 	const PSimHit & simHit = (*simHits)[simHitCounter];
 	const FastTrackerRecHitRef & recHit = (*simHit2RecHitMap)[simHitCounter];
+
+    //std::cout<< std::setprecision(5) << simHit.detUnitId() << " " << simHit.entryPoint() << " " << simHit.tof() <<std::endl;
 
 	// add recHit to latest combination
 	if(!recHit.isNull())
