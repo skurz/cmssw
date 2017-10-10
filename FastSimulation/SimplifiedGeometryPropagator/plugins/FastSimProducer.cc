@@ -379,7 +379,7 @@ FastSimProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		if(simulateMuons){
 			myCalorimetry->harvestMuonSimTracks(*m1);
 		}
-	}	
+	}
 	iEvent.put(std::move(p4),"EcalHitsEB");
 	iEvent.put(std::move(p5),"EcalHitsEE");
 	iEvent.put(std::move(p6),"EcalHitsES");
@@ -396,7 +396,7 @@ FastSimProducer::endStream()
 FSimTrack
 FastSimProducer::createFSimTrack(fastsim::Particle* particle, fastsim::ParticleManager* particleManager)
 {
-	// TODO: Not sure if correct momentum is used for the track... First argument might have to be momentum at origin vertex
+	// Not sure if correct momentum is used for the track... First argument might have to be momentum at origin vertex
 	FSimTrack myFSimTrack(particle->pdgId(), particle->momentum(), particle->simVertexIndex(), particle->genParticleIndex(), particle->simTrackIndex(), particle->charge(), particle->position(), particle->momentum(), particleManager->getSimVertex(particle->simVertexIndex()));
 
 	// move the particle through the caloLayers
