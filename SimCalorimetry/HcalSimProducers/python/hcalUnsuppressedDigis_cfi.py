@@ -45,7 +45,7 @@ hcalSimBlock = cms.PSet(
 )
 
 from Configuration.Eras.Modifier_fastSim_cff import fastSim
-fastSim.toModify( hcalSimBlock, hitsProducer=cms.string('fastSimProducer') )
+fastSim.toModify( hcalSimBlock, hitsProducer=cms.string('famosSimHits') )
 
 from Configuration.ProcessModifiers.premix_stage1_cff import premix_stage1
 premix_stage1.toModify(hcalSimBlock,
